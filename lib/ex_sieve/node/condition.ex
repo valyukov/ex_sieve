@@ -1,0 +1,98 @@
+defmodule ExSieve.Node.Condition do
+  @moduledoc false
+
+  alias ExSieve.Node.{Condition, Attribute}
+
+  defstruct values: nil, attributes: nil, predicat: nil, combinator: nil
+
+  @type t :: %__MODULE__{}
+
+  @basic_predicates ~w(eq
+                       not_eq
+                       cont
+                       not_cont
+                       lt
+                       lteq
+                       gt
+                       gteq
+                       in
+                       not_in
+                       matches
+                       does_not_match
+                       start
+                       not_start
+                       end
+                       not_end
+                       true
+                       not_true
+                       false
+                       not_false
+                       present
+                       blank
+                       null
+                       not_null)
+  @all_any_predicates Enum.flat_map(@basic_predicates, &(["#{&1}_any", "#{&1}_all"]))
+  @predicates @basic_predicates ++ @all_any_predicates
+
+  @spec predicates :: list(String.t)
+  def predicates do
+    @predicates
+  end
+
+  @spec basic_predicates :: list(String.t)
+  def basic_predicates do
+    @basic_predicates
+  end
+
+  @typep values :: String.t | integer | list(String.t | integer)
+
+  @spec extract(String.t, values, atom) :: t | {:error, :predicat_not_found}
+  def extract(key, values, module) do
+    with attributes <- extract_attributes(key, module),
+         predicat <- get_predicat(key),
+         combinator <- get_combinator(key),
+         values <- List.wrap(values),
+         do: build_condition(attributes, predicat, combinator, values)
+  end
+
+  defp build_condition({:error, reason}, _predicat, _combinator, _values), do: {:error, reason}
+  defp build_condition(_attributes, {:error, reason}, _combinator, _values), do: {:error, reason}
+  defp build_condition(attributes, predicat, combinator, values) do
+    %Condition{
+      attributes: attributes,
+      predicat: predicat,
+      combinator: combinator,
+      values: values
+    }
+  end
+
+  defp extract_attributes(key, module) do
+    key
+    |> String.split(~r/_(and|or)_/)
+    |> Enum.map(&Attribute.extract(&1, module))
+    |> validate_attributes
+  end
+
+  defp validate_attributes(attributes, acc \\ [])
+  defp validate_attributes([{:error, reason}|_tail], _acc),
+    do: {:error, reason}
+  defp validate_attributes([attribute|tail], acc),
+    do: validate_attributes(tail, acc ++ [attribute])
+  defp validate_attributes([], acc),
+    do: acc
+
+  defp get_combinator(key) do
+    cond do
+      key |> String.contains?("_or_") -> :or
+      key |> String.contains?("_and_") -> :and
+      :otherwise -> :and
+    end
+  end
+
+  defp get_predicat(key) do
+    case @predicates |> Enum.find(&String.ends_with?(key, &1)) do
+      nil -> {:error, :predicat_not_found}
+      predicat -> String.to_atom(predicat)
+    end
+  end
+end

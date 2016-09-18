@@ -1,0 +1,10 @@
+language: elixir
+otp_release:
+  - 18.2
+elixir:
+  - 1.3.2
+services:
+  - postgresql
+before_script:
+  - export DB_USER=postgres
+  - MIX_ENV=test mix ecto.reset
