@@ -46,16 +46,32 @@ defmodule ExSieve.Node.Condition do
 
   @typep values :: String.t | integer | list(String.t | integer)
 
-  @spec extract(String.t, values, atom) :: t | {:error, :predicat_not_found}
+  @spec extract(String.t, values, atom) :: t | {:error, :predicat_not_found | :value_is_empty}
   def extract(key, values, module) do
     with attributes <- extract_attributes(key, module),
          predicat <- get_predicat(key),
          combinator <- get_combinator(key),
-         values <- List.wrap(values),
+         values <- prepare_values(values),
          do: build_condition(attributes, predicat, combinator, values)
   end
 
+  defp prepare_values(values) when is_list(values) do
+    result = Enum.all?(values, fn
+                  (value) when is_bitstring(value) -> String.length(value) >= 1
+                  (_) -> true
+    end)
+    if result do
+      values
+    else
+      {:error, :value_is_empty}
+    end
+  end
+  defp prepare_values(""), do: {:error, :value_is_empty}
+  defp prepare_values(value) when is_bitstring(value), do: List.wrap(value)
+  defp prepare_values(value), do: List.wrap(value)
+
   defp build_condition({:error, reason}, _predicat, _combinator, _values), do: {:error, reason}
+  defp build_condition(_attributes, _predicat, _combinator, {:error, reason}), do: {:error, reason}
   defp build_condition(_attributes, {:error, reason}, _combinator, _values), do: {:error, reason}
   defp build_condition(attributes, predicat, combinator, values) do
     %Condition{

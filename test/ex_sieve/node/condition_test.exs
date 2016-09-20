@@ -43,5 +43,9 @@ defmodule ExSieve.Node.ConditionTest do
     test "return {:error, :attribute_not_found}" do
       assert {:error, :attribute_not_found} == Condition.extract("tid_eq", 1, Comment)
     end
+
+    test "return {:error, :value_is_empty}" do
+      assert {:error, :value_is_empty} == Condition.extract("id_eq", "", Comment)
+    end
   end
 end

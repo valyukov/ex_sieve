@@ -29,12 +29,13 @@ defmodule ExSieve do
       @ex_sieve_defaults unquote(opts)
 
       def filter(queryable, params, options \\ []) do
-        ExSieve.filter(queryable, params, ExSieve.Config.new(@ex_sieve_defaults, options))
+        ExSieve.filter(queryable, params, Config.new(@ex_sieve_defaults, options))
       end
     end
   end
 
-  @type result :: Ecto.Query.t | {:error, :attribute_not_found | :predicat_not_found | :direction_not_found}
+  @typep error :: :attribute_not_found | :predicat_not_found | :direction_not_found | :value_is_empty
+  @type result :: Ecto.Query.t | {:error, error}
 
   @spec filter(Ecto.Queryable.t, %{binary => term}, Config.t) :: result
   def filter(queryable, params, %Config{} = config) do
