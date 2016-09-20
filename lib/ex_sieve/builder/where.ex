@@ -39,9 +39,14 @@ defmodule ExSieve.Builder.Where do
   defp groupings_expr([], acc, nil), do: acc
   defp groupings_expr([], acc, combinator), do: combinator_expr(acc, combinator)
 
-  defp combinator_expr([first_expr, second_expr|tail], combinator),
-    do: combinator_expr(tail, combinator, quote(do: unquote(combinator)(unquote(first_expr), unquote(second_expr))))
-  defp combinator_expr([expr], _combinator),
+  defp combinator_expr(exprs, combinator, acc \\ [])
+  defp combinator_expr([first_expr, second_expr|tail], combinator, acc) do
+    tail_exprs = combinator_expr(tail, combinator, quote do
+                                   unquote(combinator)(unquote_splicing([first_expr, second_expr]))
+    end)
+    combinator_expr([tail_exprs], combinator, acc)
+  end
+  defp combinator_expr([expr], _combinator, []),
     do: expr
   defp combinator_expr([expr], combinator, acc),
     do: quote(do: unquote(combinator)(unquote(expr), unquote(acc)))
