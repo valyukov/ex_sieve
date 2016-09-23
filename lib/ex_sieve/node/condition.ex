@@ -106,7 +106,7 @@ defmodule ExSieve.Node.Condition do
   end
 
   defp get_predicat(key) do
-    case @predicates |> Enum.find(&String.ends_with?(key, &1)) do
+    case @predicates |> Enum.sort_by(&byte_size/1, &>=/2) |> Enum.find(&String.ends_with?(key, &1)) do
       nil -> {:error, :predicat_not_found}
       predicat -> String.to_atom(predicat)
     end

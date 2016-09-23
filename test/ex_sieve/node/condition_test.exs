@@ -36,6 +36,15 @@ defmodule ExSieve.Node.ConditionTest do
       assert length(condition.attributes) == 2
     end
 
+    test "return Condition with combinator gteq" do
+      condition = Condition.extract("post_id_gteq", 2, Comment)
+      assert condition.values == [2]
+      assert condition.combinator == :and
+      assert condition.predicat == :gteq
+      assert length(condition.attributes) == 1
+    end
+
+
     test "return {:error, :predicat_not_found}" do
       assert {:error, :predicat_not_found} == Condition.extract("post_id_and_id", 1, Comment)
     end
