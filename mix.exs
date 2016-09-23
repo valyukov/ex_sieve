@@ -4,7 +4,7 @@ defmodule ExSieve.Mixfile do
   def project do
     [
       app: :ex_sieve,
-      version: "0.2.0",
+      version: "0.3.0",
       elixir: "~> 1.3",
       elixirc_paths: elixirc_paths(Mix.env),
       package: package,
