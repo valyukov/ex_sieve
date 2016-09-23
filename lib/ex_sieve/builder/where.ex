@@ -70,10 +70,10 @@ defmodule ExSieve.Builder.Where do
   end
 
   defp predicat_expr(:eq, attribute, [value|_]) do
-    quote(do: unquote(field_expr(attribute)) == unquote(value))
+    quote(do: unquote(field_expr(attribute)) == ^unquote(value))
   end
   defp predicat_expr(:not_eq, attribute, [value|_]) do
-    quote do: unquote(field_expr(attribute)) != unquote(value)
+    quote do: unquote(field_expr(attribute)) != ^unquote(value)
   end
   defp predicat_expr(:cont, attribute, [value|_]) do
     quote do: ilike(unquote(field_expr(attribute)), unquote("%#{value}%"))
@@ -82,16 +82,16 @@ defmodule ExSieve.Builder.Where do
     quote do: not(ilike(unquote(field_expr(attribute)), unquote("%#{value}%")))
   end
   defp predicat_expr(:lt, attribute, [value|_]) do
-    quote do: unquote(field_expr(attribute)) < unquote("%#{value}%")
+    quote do: unquote(field_expr(attribute)) < ^unquote(value)
   end
   defp predicat_expr(:lteq, attribute, [value|_]) do
-    quote do: unquote(field_expr(attribute)) <= unquote("%#{value}%")
+    quote do: unquote(field_expr(attribute)) <= ^unquote(value)
   end
   defp predicat_expr(:gt, attribute, [value|_]) do
-    quote do: unquote(field_expr(attribute)) > unquote("%#{value}%")
+    quote do: unquote(field_expr(attribute)) > ^unquote(value)
   end
   defp predicat_expr(:gteq, attribute, [value|_]) do
-    quote do: unquote(field_expr(attribute)) >= unquote("%#{value}%")
+    quote do: unquote(field_expr(attribute)) >= ^unquote(value)
   end
   defp predicat_expr(:in, attribute, values) do
     quote do: unquote(field_expr(attribute)) in unquote(values)
@@ -133,7 +133,7 @@ defmodule ExSieve.Builder.Where do
     quote(do: not(unquote(predicat_expr(:blank, attribute, values))))
   end
   defp predicat_expr(:blank, attribute, [value|_]) when value in @true_values do
-    quote(do: is_nil(unquote(field_expr(attribute))) or unquote(field_expr(attribute)) == '')
+    quote(do: is_nil(unquote(field_expr(attribute))) or unquote(field_expr(attribute)) == ^'')
   end
   defp predicat_expr(:null, attribute, [value|_]) when value in @true_values do
     quote(do: is_nil(unquote(field_expr(attribute))))
