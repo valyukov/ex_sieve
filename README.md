@@ -241,7 +241,7 @@ Also, you can read more about predicates on [ransack wiki page](https://github.c
 First, you'll need to build the test database.
 
 ```elixir
-MIX_ENV=test mix db.reset
+MIX_ENV=test mix ecto.reset
 ```
 
 This task assumes you have postgres installed and that your current user can create / drop databases. If you'd prefer to use a different user, you can specify it with the environment variable `DB_USER`.
