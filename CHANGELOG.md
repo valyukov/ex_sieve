@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.4.0
+ * Add ability to use atom keys in query object, thanks for @dotsent.
+
 ## 0.3.0
  * Fix predicate extraction
  * Add interpolation mark for eq, lt, gt, queries builder.
