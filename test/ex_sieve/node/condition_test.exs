@@ -44,6 +44,13 @@ defmodule ExSieve.Node.ConditionTest do
       assert length(condition.attributes) == 1
     end
 
+    test "return Condition for atom key" do
+      condition = Condition.extract(:post_id_eq, 1, Comment)
+      assert condition.values == [1]
+      assert condition.combinator == :and
+      assert condition.predicat == :eq
+      assert length(condition.attributes) == 1
+    end
 
     test "return {:error, :predicat_not_found}" do
       assert {:error, :predicat_not_found} == Condition.extract("post_id_and_id", 1, Comment)
