@@ -46,8 +46,9 @@ defmodule ExSieve.Node.Condition do
 
   @typep values :: String.t | integer | list(String.t | integer)
 
-  @spec extract(String.t, values, atom) :: t | {:error, :predicat_not_found | :value_is_empty}
+  @spec extract(String.t | atom, values, atom) :: t | {:error, :predicat_not_found | :value_is_empty}
   def extract(key, values, module) do
+    key = to_string(key)
     with attributes <- extract_attributes(key, module),
          predicat <- get_predicat(key),
          combinator <- get_combinator(key),
