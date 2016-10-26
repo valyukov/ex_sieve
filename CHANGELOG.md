@@ -1,4 +1,6 @@
 # Changelog
+## 0.5.0
+ * All keys in query object convert to strings, you can use both String and atom in any keys.
 
 ## 0.4.0
  * Add ability to use atom keys in query object, thanks for @dotsent.
