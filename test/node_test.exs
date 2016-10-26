@@ -29,12 +29,31 @@ defmodule ExSieve.NodeTest do
       assert {:ok, grouping, [sort]} == Node.call(params, Comment, config)
     end
 
+    test "return {list(Grouping.t), list(Sort.t)} for params with mixed keys", %{config: config} do
+      sort = %Sort{direction: :asc, attribute: %Attribute{name: :body, parent: :post}}
+      grouping = %Grouping{
+        combinator: :and,
+        conditions: [
+          %Condition{
+            attributes: [%Attribute{name: :id, parent: :query}],
+            combinator: :and,
+            predicat: :eq,
+            values: [1]
+          }
+        ],
+        groupings: []
+      }
+
+      params = %{:s => "post_body asc", "id_eq" => 1}
+
+      assert {:ok, grouping, [sort]} == Node.call(params, Comment, config)
+    end
+
     test "return {list(Grouping.t), list(Sort.t)} with nested groupings", %{config: config} do
       sorts = [
         %Sort{direction: :desc, attribute: %Attribute{name: :id, parent: :query}},
         %Sort{direction: :asc, attribute: %Attribute{name: :body, parent: :post}}
       ]
-
 
       grouping = %Grouping{
         combinator: :or,
