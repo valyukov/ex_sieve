@@ -37,7 +37,7 @@ defmodule ExSieve do
   @typep error :: :attribute_not_found | :predicat_not_found | :direction_not_found | :value_is_empty
   @type result :: Ecto.Query.t | {:error, error}
 
-  @spec filter(Ecto.Queryable.t, %{binary => term}, Config.t) :: result
+  @spec filter(Ecto.Queryable.t, %{(binary | atom) => term}, Config.t) :: result
   def filter(queryable, params, %Config{} = config) do
     params
     |> Node.call(extract_schema(queryable), config)
