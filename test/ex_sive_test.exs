@@ -3,7 +3,7 @@ defmodule ExSieveTest do
 
   import Ecto.Query
 
-  alias ExSieve.{Repo, Comment, Config}
+  alias ExSieve.{Repo, Comment, Config, User}
 
   setup do
     {:ok, config: %Config{ignore_errors: false}}
@@ -42,6 +42,14 @@ defmodule ExSieveTest do
                  |> join(:inner, [c], p in assoc(c, :post))
                  |> where([c, p], p.body in ^[body])
                  |> ids
+      assert ids == ecto_ids
+    end
+
+    test "return users with custom type field", %{config: config} do
+      insert_pair(:user)
+
+      ids = User |> ExSieve.filter(%{"cash_lteq" => %Money{amount: 1000}}, config) |> ids
+      ecto_ids = User |> ids
       assert ids == ecto_ids
     end
   end
