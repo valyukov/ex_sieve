@@ -6,6 +6,7 @@ defmodule ExSieve.User do
     has_many :posts, ExSieve.Post
 
     field :name
+    field :cash, Money.Ecto.Type
 
     timestamps
   end

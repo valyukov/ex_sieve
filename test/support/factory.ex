@@ -20,7 +20,8 @@ defmodule ExSieve.Factory do
 
   def user_factory do
     %ExSieve.User{
-      name: sequence("User #")
+      name: sequence("User #"),
+      cash: Money.new(100)
     }
   end
 end

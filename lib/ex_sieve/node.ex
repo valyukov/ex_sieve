@@ -24,6 +24,7 @@ defmodule ExSieve.Node do
   defp result(grouping, sorts), do: {:ok, grouping, sorts}
 
   defp stringify_keys(nil), do: nil
+  defp stringify_keys(%{__struct__: _struct} = value), do: Macro.escape(value)
   defp stringify_keys(map = %{}) do
     map
     |> Enum.map(fn {k, v} -> {to_string(k), stringify_keys(v)} end)
