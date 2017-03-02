@@ -7,6 +7,7 @@ defmodule ExSieve.Builder.Join do
     relations |> Enum.reduce(query, &apply_join(&1, &2))
   end
 
+  @spec apply_join(Macro.t, Ecto.Queryable.t) :: Ect.Query.t :: no_return
   defp apply_join(relation, query) do
     query
     |> Macro.escape

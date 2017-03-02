@@ -7,7 +7,7 @@ defmodule ExSieve.Repo.Migrations.CreateComments do
       add :post_id, references(:posts)
       add :user_id, references(:users)
 
-      timestamps
+      timestamps()
     end
 
   end

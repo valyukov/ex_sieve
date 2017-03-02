@@ -6,7 +6,7 @@ defmodule ExSieve.Repo.Migrations.CreateAuthor do
       add :name, :string
       add :cash, :integer
 
-      timestamps
+      timestamps()
     end
   end
 end

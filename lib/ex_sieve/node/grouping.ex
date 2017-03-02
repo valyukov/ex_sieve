@@ -33,9 +33,9 @@ defmodule ExSieve.Node.Grouping do
   end
   def extract(params, schema, config), do: params |> do_extract(schema, config)
 
-  def result({:error, reason}, _groupings), do: {:error, reason}
-  def result(_grouping, {:error, reason}), do: {:error, reason}
-  def result(grouping, groupings), do: %Grouping{grouping|groupings: groupings}
+  defp result({:error, reason}, _groupings), do: {:error, reason}
+  defp result(_grouping, {:error, reason}), do: {:error, reason}
+  defp result(grouping, groupings), do: %Grouping{grouping|groupings: groupings}
 
   defp do_extract(params, schema, config, combinator \\ :and) do
     case extract_conditions(params, schema, config) do

@@ -8,7 +8,7 @@ defmodule ExSieve.Repo.Migrations.CreatePosts do
       add :published, :boolean
       add :user_id, references(:users)
 
-      timestamps
+      timestamps()
     end
 
   end

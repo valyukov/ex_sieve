@@ -12,7 +12,7 @@ defmodule ExSieve.Builder.WhereTest do
       groupping = params |> Grouping.extract(Post, %Config{ignore_errors: true})
 
       base = from(from p in Post, join: c in assoc(p, :comments))
-      ecto = base |> where([p, c], field(p, :id) == ^1 or field(c, :body) == ^"test") |> inspect
+      ecto = base |> or_where([p, c], field(p, :id) == ^1 or field(c, :body) == ^"test") |> inspect
       query = base |> Where.build(groupping, [query: 0, comments: 1]) |> inspect
 
       assert ecto == query

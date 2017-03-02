@@ -6,10 +6,10 @@ defmodule ExSieve.Builder.Where do
   @true_values [1, '1', 'T', 't', true, 'true', 'TRUE']
 
   @spec build(Ecto.Queryable.t, Grouping.t, Macro.t) :: Ecto.Query.t
-  def build(query, grouping, binding) do
+  def build(query, %Grouping{combinator: combinator} = grouping, binding) when combinator in ~w(and or)a do
     exprs = grouping |> List.wrap |> groupings_expr
     :where
-    |> Filter.build(Macro.escape(query), binding, exprs, __ENV__)
+    |> Filter.build(combinator, Macro.escape(query), binding, exprs, __ENV__)
     |> Code.eval_quoted
     |> elem(0)
   end

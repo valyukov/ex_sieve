@@ -8,7 +8,7 @@ defmodule ExSieve.Builder do
   @spec call(Ecto.Queryable.t, Grouping.t, list(Sort.t)) :: Ecto.Query.t
   def call(query, grouping, sorts) do
     relations = build_relations(grouping, sorts)
-    binding = build_binding(relations)
+    {query, binding} = build_binding(query, relations)
     query |> join(relations) |> where(grouping, binding) |> order_by(sorts, binding)
   end
 
@@ -19,11 +19,12 @@ defmodule ExSieve.Builder do
   defp order_by(query, sorts, binding),
     do: OrderBy.build(query, sorts, binding)
 
-  defp build_binding(relations) do
-    relations
+  defp build_binding(query, relations) do
+    bindings = relations
     |> List.insert_at(0, :query)
     |> Enum.map(&Macro.var(&1, Elixir))
-    |> Builder.escape_binding
+
+    Builder.escape_binding(query, bindings)
   end
 
   defp build_relations(grouping, sorts) do
