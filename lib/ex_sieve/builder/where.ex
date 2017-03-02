@@ -9,7 +9,7 @@ defmodule ExSieve.Builder.Where do
   def build(query, grouping, binding) do
     exprs = grouping |> List.wrap |> groupings_expr
     :where
-    |> Filter.build(Macro.escape(query), binding, exprs, __ENV__)
+    |> Filter.build(:and, Macro.escape(query), binding, exprs, __ENV__)
     |> Code.eval_quoted
     |> elem(0)
   end
