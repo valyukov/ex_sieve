@@ -8,6 +8,7 @@ defmodule ExSieve.Post do
     field :title
     field :body
     field :published, :boolean
+    field :published_at, Ecto.DateTime
 
     timestamps
   end

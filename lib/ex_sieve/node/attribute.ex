@@ -30,7 +30,7 @@ defmodule ExSieve.Node.Attribute do
   defp get_assoc(module, key) do
     :associations
     |> module.__schema__
-    |> Enum.find(&String.starts_with?(key, to_string(&1)))
+    |> find_field(key)
   end
 
   defp get_name(%{related: module}, key) do
@@ -39,6 +39,12 @@ defmodule ExSieve.Node.Attribute do
   defp get_name(module, key) do
     :fields
     |> module.__schema__
+    |> find_field(key)
+  end
+
+  defp find_field(fields, key) do
+    fields
+    |> Enum.sort_by(&String.length(to_string(&1)), &>=/2)
     |> Enum.find(&String.starts_with?(key, to_string(&1)))
   end
 end

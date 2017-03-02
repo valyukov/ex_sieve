@@ -4,7 +4,7 @@ defmodule ExSieve.Node.AttributeTest do
   alias ExSieve.{Node.Attribute, Post, Comment}
 
   describe "ExSieve.Node.Attribute.extract/2" do
-    test "return Attrribute with parent belongs_to" do
+    test "return Attribute with parent belongs_to" do
       assert %Attribute{parent: :post, name: :body} == Attribute.extract("post_body_eq", Comment)
     end
 
@@ -14,6 +14,11 @@ defmodule ExSieve.Node.AttributeTest do
 
     test "return Attribute without parent" do
       assert %Attribute{name: :id, parent: :query} == Attribute.extract("id_eq", Comment)
+    end
+
+    test "return Attributes for schema with similar fields names" do
+      assert %Attribute{name: :published, parent: :query} == Attribute.extract("published_eq", Post)
+      assert %Attribute{name: :published_at, parent: :query} == Attribute.extract("published_at_eq", Post)
     end
 
     test "return Attribute with belongs_to parent" do
