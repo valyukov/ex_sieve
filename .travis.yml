@@ -1,8 +1,8 @@
 language: elixir
 otp_release:
-  - 18.2
+  - 19.2
 elixir:
-  - 1.3.2
+  - 1.4.2
 services:
   - postgresql
 before_script:
