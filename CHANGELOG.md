@@ -1,4 +1,9 @@
 # Changelog
+## 0.6.0
+ * Add compatability with ecto ~> 2.1, many thanks for @galina and @s33m4nn for their contribution;
+ * Fix some bugs. 
+ * Update dependencies. 
+ 
 ## 0.5.0
  * All keys in query object convert to strings, you can use both String and atom in any keys.
 
