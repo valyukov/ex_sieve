@@ -5,7 +5,7 @@ defmodule ExSieve.Mixfile do
     [
       app: :ex_sieve,
       version: "0.6.0",
-      elixir: "~> 1.3",
+      elixir: "~> 1.4",
       elixirc_paths: elixirc_paths(Mix.env),
       package: package(),
       description: "Build filtred and sorted Ecto.Query struct from object based queries.",
@@ -34,11 +34,11 @@ defmodule ExSieve.Mixfile do
   defp deps do
     [
       {:credo, "~> 0.4", only: :dev},
-      {:dialyxir, "~> 0.4", only: :dev},
+      {:dialyxir, "~> 0.5", only: :dev},
       {:ex_machina, "~> 1.0.2", only: :test},
-      {:ex_doc, "~> 0.14", only: :dev},
-      {:postgrex, "~> 0.12", optional: true},
-      {:ecto, "~> 2.0"}
+      {:ex_doc, "~> 0.15", only: :dev},
+      {:postgrex, "~> 0.13", only: :test},
+      {:ecto, "~> 2.1"}
     ]
   end
 
