@@ -4,13 +4,13 @@ defmodule ExSieve.Mixfile do
   def project do
     [
       app: :ex_sieve,
-      version: "0.5.0",
+      version: "0.5.1",
       elixir: "~> 1.3",
       elixirc_paths: elixirc_paths(Mix.env),
-      package: package,
+      package: package(),
       description: "Build filtred and sorted Ecto.Query struct from object based queries.",
-      aliases: aliases,
-      deps: deps,
+      aliases: aliases(),
+      deps: deps(),
       dialyzer: [plt_add_deps: :transitive],
       docs: [
         main: "readme",

@@ -7,6 +7,6 @@ defmodule ExSieve.Comment do
 
     field :body
 
-    timestamps
+    timestamps()
   end
 end

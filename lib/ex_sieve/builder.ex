@@ -20,10 +20,12 @@ defmodule ExSieve.Builder do
     do: OrderBy.build(query, sorts, binding)
 
   defp build_binding(relations) do
-    relations
+    bindings = relations
     |> List.insert_at(0, :query)
     |> Enum.map(&Macro.var(&1, Elixir))
-    |> Builder.escape_binding
+    {_, vars} = Builder.escape_binding(%Ecto.Query{}, bindings)
+
+    vars
   end
 
   defp build_relations(grouping, sorts) do
