@@ -3,7 +3,8 @@ defmodule ExSieve.Builder.Where do
   alias Ecto.Query.Builder.Filter
   alias ExSieve.Node.{Attribute, Grouping, Condition}
 
-  @true_values [1, '1', 'T', 't', true, 'true', 'TRUE']
+  @true_values [1, '1', 'T', 't', true, 'true', 'TRUE', "1", "T", "t", "true",
+                "TRUE"]
 
   @spec build(Ecto.Queryable.t, Grouping.t, Macro.t) :: Ecto.Query.t
   def build(query, %Grouping{combinator: combinator} = grouping, binding) when combinator in ~w(and or)a do
