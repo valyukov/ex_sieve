@@ -4,7 +4,7 @@ defmodule ExSieve.Mixfile do
   def project do
     [
       app: :ex_sieve,
-      version: "0.6.0",
+      version: "0.6.1",
       elixir: "~> 1.4",
       elixirc_paths: elixirc_paths(Mix.env),
       package: package(),
@@ -35,7 +35,7 @@ defmodule ExSieve.Mixfile do
     [
       {:credo, "~> 0.4", only: :dev},
       {:dialyxir, "~> 0.5", only: :dev},
-      {:ex_machina, "~> 1.0.2", only: :test},
+      {:ex_machina, "~> 2.0", only: :test},
       {:ex_doc, "~> 0.15", only: :dev},
       {:postgrex, "~> 0.13", only: :test},
       {:ecto, "~> 2.1"}
