@@ -28,7 +28,7 @@ defmodule ExSieve do
     quote do
       @ex_sieve_defaults unquote(opts)
 
-      def filter(queryable, params, options \\ []) do
+      def filter(queryable, params, options \\ %{}) do
         ExSieve.filter(queryable, params, Config.new(@ex_sieve_defaults, options))
       end
     end
