@@ -1,7 +1,7 @@
 defmodule ExSieve.Node.Condition do
   @moduledoc false
 
-  alias ExSieve.Node.{Condition, Attribute}
+  alias ExSieve.Node.{Attribute, Condition}
 
   defstruct values: nil, attributes: nil, predicat: nil, combinator: nil
 
@@ -31,22 +31,19 @@ defmodule ExSieve.Node.Condition do
                        blank
                        null
                        not_null)
-  @all_any_predicates Enum.flat_map(@basic_predicates, &(["#{&1}_any", "#{&1}_all"]))
+
+  @all_any_predicates Enum.flat_map(@basic_predicates, &["#{&1}_any", "#{&1}_all"])
   @predicates @basic_predicates ++ @all_any_predicates
 
-  @spec predicates :: list(String.t)
-  def predicates do
-    @predicates
-  end
+  @spec predicates :: list(String.t())
+  def predicates, do: @predicates
 
-  @spec basic_predicates :: list(String.t)
-  def basic_predicates do
-    @basic_predicates
-  end
+  @spec basic_predicates :: list(String.t())
+  def basic_predicates, do: @basic_predicates
 
-  @typep values :: String.t | integer | list(String.t | integer)
+  @typep values :: String.t() | integer | list(String.t() | integer)
 
-  @spec extract(String.t | atom, values, atom) :: t | {:error, :predicat_not_found | :value_is_empty}
+  @spec extract(String.t() | atom, values, atom) :: t | {:error, :predicat_not_found | :value_is_empty}
   def extract(key, values, module) do
     with attributes <- extract_attributes(key, module),
          predicat <- get_predicat(key),
@@ -56,16 +53,19 @@ defmodule ExSieve.Node.Condition do
   end
 
   defp prepare_values(values) when is_list(values) do
-    result = Enum.all?(values, fn
-                  (value) when is_bitstring(value) -> String.length(value) >= 1
-                  (_) -> true
-    end)
+    result =
+      Enum.all?(values, fn
+        value when is_bitstring(value) -> String.length(value) >= 1
+        _ -> true
+      end)
+
     if result do
       values
     else
       {:error, :value_is_empty}
     end
   end
+
   defp prepare_values(""), do: {:error, :value_is_empty}
   defp prepare_values(value) when is_bitstring(value), do: List.wrap(value)
   defp prepare_values(value), do: List.wrap(value)
@@ -73,6 +73,7 @@ defmodule ExSieve.Node.Condition do
   defp build_condition({:error, reason}, _predicat, _combinator, _values), do: {:error, reason}
   defp build_condition(_attributes, _predicat, _combinator, {:error, reason}), do: {:error, reason}
   defp build_condition(_attributes, {:error, reason}, _combinator, _values), do: {:error, reason}
+
   defp build_condition(attributes, predicat, combinator, values) do
     %Condition{
       attributes: attributes,
@@ -90,12 +91,12 @@ defmodule ExSieve.Node.Condition do
   end
 
   defp validate_attributes(attributes, acc \\ [])
-  defp validate_attributes([{:error, reason}|_tail], _acc),
-    do: {:error, reason}
-  defp validate_attributes([attribute|tail], acc),
-    do: validate_attributes(tail, acc ++ [attribute])
-  defp validate_attributes([], acc),
-    do: acc
+
+  defp validate_attributes([{:error, reason} | _tail], _acc), do: {:error, reason}
+
+  defp validate_attributes([attribute | tail], acc), do: validate_attributes(tail, acc ++ [attribute])
+
+  defp validate_attributes([], acc), do: acc
 
   defp get_combinator(key) do
     cond do

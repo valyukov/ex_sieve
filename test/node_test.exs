@@ -11,6 +11,7 @@ defmodule ExSieve.NodeTest do
   describe "ExSieve.Node.call/2" do
     test "return {list(Grouping.t), list(Sort.t)}", %{config: config} do
       sort = %Sort{direction: :asc, attribute: %Attribute{name: :body, parent: :post}}
+
       grouping = %Grouping{
         combinator: :and,
         conditions: [
@@ -31,6 +32,7 @@ defmodule ExSieve.NodeTest do
 
     test "return {list(Grouping.t), list(Sort.t)} for params with mixed keys", %{config: config} do
       sort = %Sort{direction: :asc, attribute: %Attribute{name: :body, parent: :post}}
+
       grouping = %Grouping{
         combinator: :and,
         conditions: [
@@ -75,7 +77,7 @@ defmodule ExSieve.NodeTest do
                 predicat: :eq,
                 values: [1]
               }
-            ],
+            ]
           }
         ]
       }
@@ -85,12 +87,12 @@ defmodule ExSieve.NodeTest do
         "g" => [
           %{
             "c" => %{
-              "post_title_eq" => 1,
-            },
+              "post_title_eq" => 1
+            }
           }
         ],
         "c" => %{"id_eq" => 1},
-        "s" => ["post_body asc", "id desc"],
+        "s" => ["post_body asc", "id desc"]
       }
 
       assert {:ok, grouping, sorts} == Node.call(params, Comment, config)

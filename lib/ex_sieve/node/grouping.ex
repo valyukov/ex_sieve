@@ -5,37 +5,43 @@ defmodule ExSieve.Node.Grouping do
 
   @type t :: %__MODULE__{}
 
-  alias ExSieve.Node.{Grouping, Condition}
   alias ExSieve.{Config, Utils}
+  alias ExSieve.Node.{Condition, Grouping}
 
   @combinators ~w(or and)
 
-  @spec extract(%{binary => term}, atom, Config.t) :: t | {:error, :predicat_not_found | :value_is_empty}
+  @spec extract(%{binary => term}, atom, Config.t()) :: t | {:error, :predicat_not_found | :value_is_empty}
   def extract(%{"m" => m, "g" => g, "c" => conditions}, schema, config) when m in @combinators do
     conditions
     |> do_extract(schema, config, String.to_atom(m))
     |> result(extract_groupings(g, schema, config))
   end
+
   def extract(%{"m" => m, "c" => conditions}, schema, config) when m in @combinators do
     conditions |> do_extract(schema, config, String.to_atom(m)) |> result([])
   end
+
   def extract(%{"c" => conditions}, schema, config) do
     conditions |> do_extract(schema, config) |> result([])
   end
+
   def extract(%{"m" => m} = conditions, schema, config) when m in @combinators do
     conditions |> Map.delete("m") |> do_extract(schema, config, String.to_atom(m))
   end
+
   def extract(%{"g" => g}, schema, config) do
     %Grouping{combinator: :and, conditions: []} |> result(extract_groupings(g, schema, config))
   end
+
   def extract(%{"g" => g, "m" => m}, schema, config) when m in @combinators do
     %Grouping{combinator: String.to_atom(m), conditions: []} |> result(extract_groupings(g, schema, config))
   end
+
   def extract(params, schema, config), do: params |> do_extract(schema, config)
 
   defp result({:error, reason}, _groupings), do: {:error, reason}
   defp result(_grouping, {:error, reason}), do: {:error, reason}
-  defp result(grouping, groupings), do: %Grouping{grouping|groupings: groupings}
+  defp result(grouping, groupings), do: %Grouping{grouping | groupings: groupings}
 
   defp do_extract(params, schema, config, combinator \\ :and) do
     case extract_conditions(params, schema, config) do

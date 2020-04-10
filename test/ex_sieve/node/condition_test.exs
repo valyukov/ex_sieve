@@ -29,7 +29,7 @@ defmodule ExSieve.Node.ConditionTest do
     end
 
     test "return Condition with combinator cont_all" do
-      condition = Condition.extract("post_id_and_id_cont_all", [1,2], Comment)
+      condition = Condition.extract("post_id_and_id_cont_all", [1, 2], Comment)
       assert condition.values == [1, 2]
       assert condition.combinator == :and
       assert condition.predicat == :cont_all

@@ -3,7 +3,7 @@ defmodule ExSieve do
   ExSieve is a object query translator to Ecto.Query.
   """
 
-  alias ExSieve.{Builder, Node, Config}
+  alias ExSieve.{Builder, Config, Node}
 
   @doc """
   ExSieve is meant to be `use`d by a Ecto.Repo.
@@ -35,9 +35,9 @@ defmodule ExSieve do
   end
 
   @typep error :: :attribute_not_found | :predicat_not_found | :direction_not_found | :value_is_empty
-  @type result :: Ecto.Query.t | {:error, error}
+  @type result :: Ecto.Query.t() | {:error, error}
 
-  @spec filter(Ecto.Queryable.t, %{(binary | atom) => term}, Config.t) :: result
+  @spec filter(Ecto.Queryable.t(), %{(binary | atom) => term}, Config.t()) :: result
   def filter(queryable, params, %Config{} = config) do
     params
     |> Node.call(extract_schema(queryable), config)

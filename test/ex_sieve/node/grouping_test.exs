@@ -35,9 +35,9 @@ defmodule ExSieve.Node.GroupingTest do
       groupping = Grouping.extract(params, Comment, config)
       assert length(groupping.conditions) == 2
       assert length(groupping.groupings) == 1
-      assert length(groupping.groupings |> List.first |> Map.get(:conditions)) == 2
-      assert length(groupping.groupings |> List.first |> Map.get(:groupings)) == 0
-      assert groupping.groupings |> List.first |> Map.get(:combinator) == :or
+      assert length(groupping.groupings |> List.first() |> Map.get(:conditions)) == 2
+      assert length(groupping.groupings |> List.first() |> Map.get(:groupings)) == 0
+      assert groupping.groupings |> List.first() |> Map.get(:combinator) == :or
       assert groupping.combinator == :and
     end
 
@@ -49,11 +49,10 @@ defmodule ExSieve.Node.GroupingTest do
       assert length(groupping.groupings) == 1
       assert groupping.combinator == :and
 
-      assert length(groupping.groupings |> List.first |> Map.get(:conditions)) == 2
-      assert length(groupping.groupings |> List.first |> Map.get(:groupings)) == 0
-      assert groupping.groupings |> List.first |> Map.get(:combinator) == :or
+      assert length(groupping.groupings |> List.first() |> Map.get(:conditions)) == 2
+      assert length(groupping.groupings |> List.first() |> Map.get(:groupings)) == 0
+      assert groupping.groupings |> List.first() |> Map.get(:combinator) == :or
     end
-
 
     test "return {:error, :predicat_not_found}", %{config: config} do
       assert {:error, :predicat_not_found} == Grouping.extract(%{"post_id_and_id" => 1}, Comment, config)

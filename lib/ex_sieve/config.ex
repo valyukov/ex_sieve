@@ -12,16 +12,15 @@ defmodule ExSieve.Config do
   @type t :: %__MODULE__{}
 
   @doc false
-  @spec new(Keyword.t, map) :: ExSieve.Config.t
+  @spec new(Keyword.t(), map) :: ExSieve.Config.t()
   def new(defaults, options \\ %{}) do
-
     %ExSieve.Config{ignore_errors: ignore_errors?(defaults, options)}
   end
 
   defp normalize_options(options) do
-    Enum.reduce options, %{}, fn({k, v}, map) ->
+    Enum.reduce(options, %{}, fn {k, v}, map ->
       Map.put(map, to_string(k), v)
-    end
+    end)
   end
 
   defp ignore_errors?(defaults, options) do

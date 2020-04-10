@@ -14,10 +14,12 @@ defmodule ExSieve.Builder.JoinTest do
     end
 
     test "return Ecto.Query post and user join with comments" do
-      original = Post
-                 |> join(:inner, [p], c in assoc(p, :comments))
-                 |> join(:inner, [p], c in assoc(p, :user))
-                 |> inspect
+      original =
+        Post
+        |> join(:inner, [p], c in assoc(p, :comments))
+        |> join(:inner, [p], c in assoc(p, :user))
+        |> inspect
+
       built = Post |> Join.build([:comments, :user]) |> inspect
 
       assert original == built
