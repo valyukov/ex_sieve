@@ -7,8 +7,8 @@ defmodule ExSieve.Builder.JoinTest do
 
   describe "ExSieve.Builder.Join.build/2" do
     test "return Ecto.Query post join with comments" do
-      original = Post |> join(:inner, [p], c in assoc(p, :comments)) |> inspect
-      built = Post |> Join.build([:comments]) |> inspect
+      original = Post |> join(:inner, [p], c in assoc(p, :comments), as: :comments) |> inspect()
+      built = Post |> Join.build([:comments]) |> inspect()
 
       assert original == built
     end
@@ -16,11 +16,11 @@ defmodule ExSieve.Builder.JoinTest do
     test "return Ecto.Query post and user join with comments" do
       original =
         Post
-        |> join(:inner, [p], c in assoc(p, :comments))
-        |> join(:inner, [p], c in assoc(p, :user))
-        |> inspect
+        |> join(:inner, [p], c in assoc(p, :comments), as: :comments)
+        |> join(:inner, [p], c in assoc(p, :user), as: :user)
+        |> inspect()
 
-      built = Post |> Join.build([:comments, :user]) |> inspect
+      built = Post |> Join.build([:comments, :user]) |> inspect()
 
       assert original == built
     end

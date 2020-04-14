@@ -7,27 +7,24 @@ defmodule ExSieve.Builder do
   @spec call(Ecto.Queryable.t(), Grouping.t(), list(Sort.t())) :: Ecto.Query.t()
   def call(query, grouping, sorts) do
     relations = build_relations(grouping, sorts)
-    {query, binding} = build_binding(query, relations)
+    binding = build_binding(relations)
 
     query
     |> join(relations)
     |> where(grouping, binding)
-    |> order_by(sorts, binding)
+    |> order_by(sorts)
   end
 
   defp join(query, relations), do: Join.build(query, relations)
 
   defp where(query, groupings, binding), do: Where.build(query, groupings, binding)
 
-  defp order_by(query, sorts, binding), do: OrderBy.build(query, sorts, binding)
+  defp order_by(query, sorts), do: OrderBy.build(query, sorts)
 
-  defp build_binding(query, relations) do
-    bindings =
-      relations
-      |> List.insert_at(0, :query)
-      |> Enum.map(&Macro.var(&1, __MODULE__))
-
-    {query, bindings}
+  defp build_binding(relations) do
+    relations
+    |> List.insert_at(0, :query)
+    |> Enum.map(&Macro.var(&1, __MODULE__))
   end
 
   defp build_relations(grouping, sorts) do

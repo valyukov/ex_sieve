@@ -11,7 +11,7 @@ defmodule ExSieve.Builder.Join do
   defp apply_join(relation, query) do
     query
     |> Macro.escape()
-    |> Join.build(:inner, [Macro.var(:query, __MODULE__)], expr(relation), nil, nil, nil, nil, nil, __ENV__)
+    |> Join.build(:inner, [Macro.var(:query, __MODULE__)], expr(relation), nil, nil, relation, nil, nil, __ENV__)
     |> elem(0)
     |> Code.eval_quoted()
     |> elem(0)
