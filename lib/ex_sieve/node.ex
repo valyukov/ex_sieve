@@ -4,7 +4,7 @@ defmodule ExSieve.Node do
   alias ExSieve.Node.{Grouping, Sort}
   alias ExSieve.{Config, Utils}
 
-  @typep error :: {:error, :attribute_not_found | :predicat_not_found | :direction_not_found}
+  @typep error :: {:error, :attribute_not_found | :predicate_not_found | :direction_not_found}
 
   @spec call(%{(atom | binary) => term}, atom, Config.t()) :: {:ok, Grouping.t(), list(Sort.t())} | error
   def call(params_with_sort, schema, config) do

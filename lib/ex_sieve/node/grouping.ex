@@ -10,7 +10,7 @@ defmodule ExSieve.Node.Grouping do
 
   @combinators ~w(or and)
 
-  @spec extract(%{binary => term}, atom, Config.t()) :: t | {:error, :predicat_not_found | :value_is_empty}
+  @spec extract(%{binary => term}, atom, Config.t()) :: t | {:error, :predicate_not_found | :value_is_empty}
   def extract(%{"m" => m, "g" => g, "c" => conditions}, schema, config) when m in @combinators do
     conditions
     |> do_extract(schema, config, String.to_atom(m))

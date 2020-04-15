@@ -14,7 +14,7 @@ defmodule ExSieve.Builder.Where do
   defp dynamic_grouping(%Grouping{conditions: conditions, groupings: groupings, combinator: combinator}) do
     conditions
     |> Enum.map(fn
-      %Condition{attributes: attrs, values: vals, predicat: predicate, combinator: combinator} ->
+      %Condition{attributes: attrs, values: vals, predicate: predicate, combinator: combinator} ->
         attrs
         |> Enum.map(fn attr -> dynamic_predicate(predicate, attr, vals) end)
         |> combine(combinator)
@@ -211,14 +211,14 @@ defmodule ExSieve.Builder.Where do
     dynamic([{^parent, p}], not (is_nil(field(p, ^name)) or field(p, ^name) == ^""))
   end
 
-  for basic_predicat <- Condition.basic_predicates() do
+  for basic_predicate <- Condition.basic_predicates() do
     for {name, combinator} <- [all: :and, any: :or] do
-      predicat = String.to_atom("#{basic_predicat}_#{name}")
-      basic_predicat = String.to_atom(basic_predicat)
+      predicate = String.to_atom("#{basic_predicate}_#{name}")
+      basic_predicate = String.to_atom(basic_predicate)
 
-      defp dynamic_predicate(unquote(predicat), attribute, values) do
+      defp dynamic_predicate(unquote(predicate), attribute, values) do
         values
-        |> Enum.map(&dynamic_predicate(unquote(basic_predicat), attribute, List.wrap(&1)))
+        |> Enum.map(&dynamic_predicate(unquote(basic_predicate), attribute, List.wrap(&1)))
         |> combine(unquote(combinator))
       end
     end

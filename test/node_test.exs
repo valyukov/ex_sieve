@@ -18,7 +18,7 @@ defmodule ExSieve.NodeTest do
           %Condition{
             attributes: [%Attribute{name: :id, parent: :query}],
             combinator: :and,
-            predicat: :eq,
+            predicate: :eq,
             values: [1]
           }
         ],
@@ -39,7 +39,7 @@ defmodule ExSieve.NodeTest do
           %Condition{
             attributes: [%Attribute{name: :id, parent: :query}],
             combinator: :and,
-            predicat: :eq,
+            predicate: :eq,
             values: [1]
           }
         ],
@@ -63,7 +63,7 @@ defmodule ExSieve.NodeTest do
           %Condition{
             attributes: [%Attribute{name: :id, parent: :query}],
             combinator: :and,
-            predicat: :eq,
+            predicate: :eq,
             values: [1]
           }
         ],
@@ -74,7 +74,7 @@ defmodule ExSieve.NodeTest do
               %Condition{
                 attributes: [%Attribute{name: :title, parent: :post}],
                 combinator: :and,
-                predicat: :eq,
+                predicate: :eq,
                 values: [1]
               }
             ]

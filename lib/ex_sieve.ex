@@ -34,7 +34,7 @@ defmodule ExSieve do
     end
   end
 
-  @typep error :: :attribute_not_found | :predicat_not_found | :direction_not_found | :value_is_empty
+  @typep error :: :attribute_not_found | :predicate_not_found | :direction_not_found | :value_is_empty
   @type result :: Ecto.Query.t() | {:error, error}
 
   @spec filter(Ecto.Queryable.t(), %{(binary | atom) => term}, Config.t()) :: result

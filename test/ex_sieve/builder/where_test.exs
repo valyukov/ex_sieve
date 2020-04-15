@@ -9,12 +9,12 @@ defmodule ExSieve.Builder.WhereTest do
   describe "ExSieve.Builder.Where.build/3" do
     test "return Ecto.Query for where comments" do
       params = %{"m" => "or", "comments_body_eq" => "test", "id_eq" => 1}
-      groupping = Grouping.extract(params, Post, %Config{ignore_errors: true})
+      grouping = Grouping.extract(params, Post, %Config{ignore_errors: true})
 
       base = from(from(p in Post, join: c in assoc(p, :comments), as: :comments))
       ecto = base |> where([p, c], field(p, :id) == ^1 or field(c, :body) == ^"test") |> inspect()
 
-      query = base |> Where.build(groupping) |> inspect()
+      query = base |> Where.build(grouping) |> inspect()
 
       assert ecto == query
     end
@@ -32,7 +32,7 @@ defmodule ExSieve.Builder.WhereTest do
         ]
       }
 
-      groupping = params |> Grouping.extract(Post, %Config{ignore_errors: true})
+      grouping = params |> Grouping.extract(Post, %Config{ignore_errors: true})
 
       common =
         from(from(p in Post, join: c in assoc(p, :comments), as: :comments, join: u in assoc(p, :user), as: :user))
@@ -47,7 +47,7 @@ defmodule ExSieve.Builder.WhereTest do
 
       query =
         common
-        |> Where.build(groupping)
+        |> Where.build(grouping)
         |> inspect()
 
       assert ecto == query
@@ -57,10 +57,10 @@ defmodule ExSieve.Builder.WhereTest do
       datetime = NaiveDateTime.utc_now() |> NaiveDateTime.to_iso8601()
       params = %{"inserted_at_gteq" => datetime}
 
-      groupping = Grouping.extract(params, Post, %Config{ignore_errors: true})
+      grouping = Grouping.extract(params, Post, %Config{ignore_errors: true})
 
       ecto = Post |> where([p], field(p, :inserted_at) >= ^datetime) |> inspect()
-      query = Post |> Where.build(groupping) |> inspect()
+      query = Post |> Where.build(grouping) |> inspect()
 
       assert ecto == query
     end

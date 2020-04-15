@@ -4,7 +4,7 @@ defmodule ExSieve.Builder.Join do
 
   @spec build(Ecto.Queryable.t(), Macro.t()) :: Ecto.Query.t()
   def build(query, relations) do
-    Enum.reduce(relations, query, &apply_join(&1, &2))
+    Enum.reduce(relations, query, &apply_join/2)
   end
 
   @spec apply_join(Macro.t(), Ecto.Queryable.t()) :: Ecto.Query.t() | no_return

@@ -3,7 +3,7 @@ defmodule ExSieve.Node.Condition do
 
   alias ExSieve.Node.{Attribute, Condition}
 
-  defstruct values: nil, attributes: nil, predicat: nil, combinator: nil
+  defstruct values: nil, attributes: nil, predicate: nil, combinator: nil
 
   @type t :: %__MODULE__{}
 
@@ -43,13 +43,13 @@ defmodule ExSieve.Node.Condition do
 
   @typep values :: String.t() | integer | list(String.t() | integer)
 
-  @spec extract(String.t() | atom, values, atom) :: t | {:error, :predicat_not_found | :value_is_empty}
+  @spec extract(String.t() | atom, values, atom) :: t | {:error, :predicate_not_found | :value_is_empty}
   def extract(key, values, module) do
     with attributes <- extract_attributes(key, module),
-         predicat <- get_predicat(key),
+         predicate <- get_predicate(key),
          combinator <- get_combinator(key),
          values <- prepare_values(values),
-         do: build_condition(attributes, predicat, combinator, values)
+         do: build_condition(attributes, predicate, combinator, values)
   end
 
   defp prepare_values(values) when is_list(values) do
@@ -70,14 +70,14 @@ defmodule ExSieve.Node.Condition do
   defp prepare_values(value) when is_bitstring(value), do: List.wrap(value)
   defp prepare_values(value), do: List.wrap(value)
 
-  defp build_condition({:error, reason}, _predicat, _combinator, _values), do: {:error, reason}
-  defp build_condition(_attributes, _predicat, _combinator, {:error, reason}), do: {:error, reason}
+  defp build_condition({:error, reason}, _predicate, _combinator, _values), do: {:error, reason}
+  defp build_condition(_attributes, _predicate, _combinator, {:error, reason}), do: {:error, reason}
   defp build_condition(_attributes, {:error, reason}, _combinator, _values), do: {:error, reason}
 
-  defp build_condition(attributes, predicat, combinator, values) do
+  defp build_condition(attributes, predicate, combinator, values) do
     %Condition{
       attributes: attributes,
-      predicat: predicat,
+      predicate: predicate,
       combinator: combinator,
       values: values
     }
@@ -106,10 +106,10 @@ defmodule ExSieve.Node.Condition do
     end
   end
 
-  defp get_predicat(key) do
+  defp get_predicate(key) do
     case @predicates |> Enum.sort_by(&byte_size/1, &>=/2) |> Enum.find(&String.ends_with?(key, &1)) do
-      nil -> {:error, :predicat_not_found}
-      predicat -> String.to_atom(predicat)
+      nil -> {:error, :predicate_not_found}
+      predicate -> String.to_atom(predicate)
     end
   end
 end
