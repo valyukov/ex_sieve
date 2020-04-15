@@ -1,6 +1,7 @@
 defmodule ExSieve.Node.Condition do
   @moduledoc false
 
+  alias ExSieve.{Config, Utils}
   alias ExSieve.Node.{Attribute, Condition}
 
   defstruct values: nil, attributes: nil, predicate: nil, combinator: nil
@@ -43,11 +44,11 @@ defmodule ExSieve.Node.Condition do
 
   @typep values :: String.t() | integer | list(String.t() | integer)
 
-  @spec extract(String.t() | atom, values, atom) ::
+  @spec extract(String.t() | atom, values, atom, Config.t()) ::
           t | {:error, :predicate_not_found | :value_is_empty | :attribute_not_found}
-  def extract(key, values, module) do
+  def extract(key, values, module, config) do
     with {:ok, attributes} <- extract_attributes(key, module),
-         {:ok, predicate} <- get_predicate(key),
+         {:ok, predicate} <- get_predicate(key, config),
          {:ok, values} <- prepare_values(values) do
       %Condition{
         attributes: attributes,
@@ -69,8 +70,9 @@ defmodule ExSieve.Node.Condition do
     end)
   end
 
-  defp get_predicate(key) do
+  defp get_predicate(key, config) do
     @predicates
+    |> Utils.filter(config.only_predicates, config.except_predicates)
     |> Enum.sort_by(&byte_size/1, &>=/2)
     |> Enum.find(&String.ends_with?(key, &1))
     |> case do

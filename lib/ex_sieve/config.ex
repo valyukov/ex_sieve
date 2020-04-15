@@ -7,25 +7,48 @@ defmodule ExSieve.Config do
   }
   ```
   """
-  defstruct ignore_errors: true
+  @defaults [
+    ignore_errors: true,
+    except_predicates: nil,
+    only_predicates: nil
+  ]
+
+  defstruct @defaults
 
   @type t :: %__MODULE__{}
 
   @doc false
-  @spec new(Keyword.t(), map) :: ExSieve.Config.t()
+  @spec new(Keyword.t(), map | Keyword.t()) :: ExSieve.Config.t()
   def new(defaults, options \\ %{}) do
-    %ExSieve.Config{ignore_errors: ignore_errors?(defaults, options)}
+    %ExSieve.Config{
+      ignore_errors: option_value(:ignore_errors, options, defaults),
+      except_predicates: option_value(:except_predicates, options, defaults),
+      only_predicates: option_value(:only_predicates, options, defaults)
+    }
   end
 
-  defp normalize_options(options) do
-    Enum.reduce(options, %{}, fn {k, v}, map ->
-      Map.put(map, to_string(k), v)
-    end)
+  defp option_value(key, options, defaults) when is_map(options) do
+    option_value(key, options, defaults, [&Map.fetch(options, &1), &Map.fetch(options, Atom.to_string(&1))])
   end
 
-  defp ignore_errors?(defaults, options) do
-    options
-    |> normalize_options
-    |> Map.get("ignore_errors", Keyword.get(defaults, :ignore_errors, true))
+  defp option_value(key, options, defaults) when is_list(options) do
+    option_value(key, options, defaults, [&Keyword.fetch(options, &1)])
+  end
+
+  defp option_value(key, _options, defaults, getters) do
+    Enum.reduce_while(
+      getters ++
+        [
+          &Keyword.fetch(defaults, &1),
+          &Keyword.fetch(@defaults, &1)
+        ],
+      :error,
+      fn fun, _ ->
+        case fun.(key) do
+          {:ok, value} -> {:halt, value}
+          :error -> {:cont, :error}
+        end
+      end
+    )
   end
 end
