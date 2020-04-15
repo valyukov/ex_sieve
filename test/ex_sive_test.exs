@@ -53,10 +53,8 @@ defmodule ExSieveTest do
 
     test "return users with custom type field", %{config: config} do
       insert_pair(:user)
-
-      ids = User |> ExSieve.filter(%{"cash_lteq" => %Money{amount: 1000}}, config) |> ids
-      ecto_ids = User |> ids
-      assert ids == ecto_ids
+      ids = User |> ExSieve.filter(%{"cash_lteq" => %Money{amount: 1000}}, config) |> ids()
+      assert ids == ids(User)
     end
   end
 

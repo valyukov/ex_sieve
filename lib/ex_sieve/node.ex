@@ -24,7 +24,7 @@ defmodule ExSieve.Node do
   defp result(grouping, sorts), do: {:ok, grouping, sorts}
 
   defp stringify_keys(nil), do: nil
-  defp stringify_keys(%{__struct__: _struct} = value), do: Macro.escape(value)
+  defp stringify_keys(%{__struct__: _struct} = value), do: value
   defp stringify_keys(%{} = map), do: Map.new(map, fn {k, v} -> {to_string(k), stringify_keys(v)} end)
   defp stringify_keys([head | rest]), do: [stringify_keys(head) | stringify_keys(rest)]
   defp stringify_keys(not_a_map), do: not_a_map

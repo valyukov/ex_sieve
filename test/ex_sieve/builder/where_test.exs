@@ -9,13 +9,12 @@ defmodule ExSieve.Builder.WhereTest do
   describe "ExSieve.Builder.Where.build/3" do
     test "return Ecto.Query for where comments" do
       params = %{"m" => "or", "comments_body_eq" => "test", "id_eq" => 1}
-      groupping = params |> Grouping.extract(Post, %Config{ignore_errors: true})
+      groupping = Grouping.extract(params, Post, %Config{ignore_errors: true})
 
-      base = from(from(p in Post, join: c in assoc(p, :comments)))
-      ecto = base |> or_where([p, c], field(p, :id) == ^1 or field(c, :body) == ^"test") |> inspect
+      base = from(from(p in Post, join: c in assoc(p, :comments), as: :comments))
+      ecto = base |> where([p, c], field(p, :id) == ^1 or field(c, :body) == ^"test") |> inspect()
 
-      query =
-        base |> Where.build(groupping, [Macro.var(:query, __MODULE__), Macro.var(:comments, __MODULE__)]) |> inspect
+      query = base |> Where.build(groupping) |> inspect()
 
       assert ecto == query
     end
@@ -35,21 +34,21 @@ defmodule ExSieve.Builder.WhereTest do
 
       groupping = params |> Grouping.extract(Post, %Config{ignore_errors: true})
 
-      common = from(from(p in Post, join: c in assoc(p, :comments), join: u in assoc(p, :user)))
+      common =
+        from(from(p in Post, join: c in assoc(p, :comments), as: :comments, join: u in assoc(p, :user), as: :user))
 
       ecto =
         common
-        |> where([p, c, u], c.body == ^"test" and ((ilike(u.name, "%1%") or ilike(u.name, "%2%")) and c.user_id in [1]))
+        |> where(
+          [p, c, u],
+          c.body == ^"test" and ((ilike(u.name, ^"%1%") or ilike(u.name, ^"%2%")) and c.user_id in ^[1])
+        )
         |> inspect
 
       query =
         common
-        |> Where.build(groupping, [
-          Macro.var(:query, __MODULE__),
-          Macro.var(:comments, __MODULE__),
-          Macro.var(:user, __MODULE__)
-        ])
-        |> inspect
+        |> Where.build(groupping)
+        |> inspect()
 
       assert ecto == query
     end
@@ -58,10 +57,10 @@ defmodule ExSieve.Builder.WhereTest do
       datetime = NaiveDateTime.utc_now() |> NaiveDateTime.to_iso8601()
       params = %{"inserted_at_gteq" => datetime}
 
-      groupping = params |> Grouping.extract(Post, %Config{ignore_errors: true})
+      groupping = Grouping.extract(params, Post, %Config{ignore_errors: true})
 
-      ecto = Post |> where([p], field(p, :inserted_at) >= ^datetime) |> inspect
-      query = Post |> Where.build(groupping, [Macro.var(:query, __MODULE__)]) |> inspect
+      ecto = Post |> where([p], field(p, :inserted_at) >= ^datetime) |> inspect()
+      query = Post |> Where.build(groupping) |> inspect()
 
       assert ecto == query
     end
