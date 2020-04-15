@@ -20,4 +20,4 @@ defmodule ExSieve.TestCase do
   end
 end
 
-ExSieve.Repo.start_link
+ExSieve.Repo.start_link()

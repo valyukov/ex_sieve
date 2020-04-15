@@ -1,19 +1,17 @@
 defmodule ExSieve.Builder.OrderBy do
   @moduledoc false
-  alias Ecto.Query.Builder.OrderBy
+  import Ecto.Query
+
   alias ExSieve.Node.Sort
 
-  @spec build(Ecto.Queryable.t, list(Sort.t), Macro.t) :: Ecto.Query.t
-  def build(query, sorts, binding) do
-    query
-    |> Macro.escape
-    |> OrderBy.build(binding, Enum.map(sorts, &expr/1), __ENV__)
-    |> Code.eval_quoted
-    |> elem(0)
+  @spec build(Ecto.Queryable.t(), list(Sort.t())) :: Ecto.Query.t()
+  def build(query, sorts) do
+    Enum.reduce(sorts, query, fn
+      %Sort{direction: direction, attribute: %{name: name, parent: parent}}, query ->
+        order_by(query, ^[{direction, dynamic_sort(parent, name)}])
+    end)
   end
 
-  defp expr(%{direction: direction, attribute: %{name: name, parent: parent}}) do
-    parent = Macro.var(parent, Elixir)
-    quote do: {unquote(direction), field(unquote(parent), unquote(name))}
-  end
+  defp dynamic_sort(:query, name), do: dynamic([p], field(p, ^name))
+  defp dynamic_sort(parent, name), do: dynamic([{^parent, p}], field(p, ^name))
 end

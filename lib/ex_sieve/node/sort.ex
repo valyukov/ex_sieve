@@ -5,20 +5,23 @@ defmodule ExSieve.Node.Sort do
 
   @type t :: %__MODULE__{}
 
-  alias ExSieve.Node.{Sort, Attribute}
+  alias ExSieve.Node.{Attribute, Sort}
 
   @directions ~w(desc asc)
 
-  @spec extract(String.t | list(String.t), atom) :: list(t | {:error, :attribute_not_found | :direction_not_found})
+  @spec extract(String.t() | list(String.t()), atom) :: list(t | {:error, :attribute_not_found | :direction_not_found})
   def extract(value, schema) when is_bitstring(value) do
-    value |> build(schema) |> List.wrap
-  end
-  def extract(values, schema) do
-    values |> Enum.map(&build(&1, schema))
+    value
+    |> build(schema)
+    |> List.wrap()
   end
 
+  def extract(values, schema), do: Enum.map(values, &build(&1, schema))
+
   defp build(value, schema) do
-    value |> Attribute.extract(schema) |> result(parse_direction(value))
+    value
+    |> Attribute.extract(schema)
+    |> result(parse_direction(value))
   end
 
   defp result(_attribute, nil), do: {:error, :direction_not_found}

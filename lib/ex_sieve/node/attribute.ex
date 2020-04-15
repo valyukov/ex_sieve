@@ -7,7 +7,7 @@ defmodule ExSieve.Node.Attribute do
 
   @type t :: %__MODULE__{}
 
-  @spec extract(String.t, atom) :: t | {:error, :attribute_not_found}
+  @spec extract(String.t(), atom) :: t | {:error, :attribute_not_found}
   def extract(key, module) do
     case get_name(module, key) || get_assoc_name(module, key) do
       nil -> {:error, :attribute_not_found}
@@ -21,6 +21,7 @@ defmodule ExSieve.Node.Attribute do
     case get_assoc(module, key) do
       nil ->
         nil
+
       assoc ->
         key = String.replace_prefix(key, "#{assoc}_", "")
         {assoc, get_name(module.__schema__(:association, assoc), key)}
@@ -29,16 +30,15 @@ defmodule ExSieve.Node.Attribute do
 
   defp get_assoc(module, key) do
     :associations
-    |> module.__schema__
+    |> module.__schema__()
     |> find_field(key)
   end
 
-  defp get_name(%{related: module}, key) do
-    get_name(module, key)
-  end
+  defp get_name(%{related: module}, key), do: get_name(module, key)
+
   defp get_name(module, key) do
     :fields
-    |> module.__schema__
+    |> module.__schema__()
     |> find_field(key)
   end
 
