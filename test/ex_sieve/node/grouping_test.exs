@@ -8,8 +8,15 @@ defmodule ExSieve.Node.GroupingTest do
   end
 
   describe "Grouping.extract/3" do
-    test "return Grouping with combinator or", %{config: config} do
+    test "return Grouping with combinator or and implicit conditions", %{config: config} do
       params = %{"m" => "or", "post_body_eq" => "test", "id_in" => 1}
+      grouping = Grouping.extract(params, Comment, config)
+      assert length(grouping.conditions) == 2
+      assert grouping.combinator == :or
+    end
+
+    test "return Grouping with combinator or and explicit conditions", %{config: config} do
+      params = %{"m" => "or", "c" => %{"post_body_eq" => "test", "id_in" => 1}}
       grouping = Grouping.extract(params, Comment, config)
       assert length(grouping.conditions) == 2
       assert grouping.combinator == :or
@@ -29,9 +36,33 @@ defmodule ExSieve.Node.GroupingTest do
       assert grouping.combinator == :and
     end
 
-    test "return Grouping with nested groupings", %{config: config} do
+    test "return Grouping with nested groupings and explicit conditions", %{config: config} do
       conditions = %{"post_body_eq" => "test", "id_in" => 1}
       params = %{"m" => "and", "c" => conditions, "g" => [%{"m" => "or", "c" => conditions}]}
+      grouping = Grouping.extract(params, Comment, config)
+      assert length(grouping.conditions) == 2
+      assert length(grouping.groupings) == 1
+      assert length(grouping.groupings |> List.first() |> Map.get(:conditions)) == 2
+      assert length(grouping.groupings |> List.first() |> Map.get(:groupings)) == 0
+      assert grouping.groupings |> List.first() |> Map.get(:combinator) == :or
+      assert grouping.combinator == :and
+    end
+
+    test "return Grouping with nested groupings and implicit conditions", %{config: config} do
+      conditions = %{"post_body_eq" => "test", "id_in" => 1}
+      params = Map.put(conditions, "g", [%{"m" => "or", "c" => conditions}])
+      grouping = Grouping.extract(params, Comment, config)
+      assert length(grouping.conditions) == 2
+      assert length(grouping.groupings) == 1
+      assert length(grouping.groupings |> List.first() |> Map.get(:conditions)) == 2
+      assert length(grouping.groupings |> List.first() |> Map.get(:groupings)) == 0
+      assert grouping.groupings |> List.first() |> Map.get(:combinator) == :or
+      assert grouping.combinator == :and
+    end
+
+    test "return Grouping with nested groupings and implicit nested conditions", %{config: config} do
+      conditions = %{"post_body_eq" => "test", "id_in" => 1}
+      params = Map.put(conditions, "g", [Map.put(conditions, "m", "or")])
       grouping = Grouping.extract(params, Comment, config)
       assert length(grouping.conditions) == 2
       assert length(grouping.groupings) == 1
