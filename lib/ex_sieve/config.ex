@@ -10,7 +10,9 @@ defmodule ExSieve.Config do
   @defaults [
     ignore_errors: true,
     except_predicates: nil,
-    only_predicates: nil
+    only_predicates: nil,
+    except_attributes: nil,
+    only_attributes: nil
   ]
 
   defstruct @defaults
@@ -23,7 +25,9 @@ defmodule ExSieve.Config do
     %ExSieve.Config{
       ignore_errors: option_value(:ignore_errors, options, defaults),
       except_predicates: option_value(:except_predicates, options, defaults),
-      only_predicates: option_value(:only_predicates, options, defaults)
+      only_predicates: option_value(:only_predicates, options, defaults),
+      except_attributes: option_value(:except_attributes, options, defaults),
+      only_attributes: option_value(:only_attributes, options, defaults)
     }
   end
 

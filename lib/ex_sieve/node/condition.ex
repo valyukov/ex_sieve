@@ -47,7 +47,7 @@ defmodule ExSieve.Node.Condition do
   @spec extract(String.t() | atom, values, atom, Config.t()) ::
           t | {:error, :predicate_not_found | :value_is_empty | :attribute_not_found}
   def extract(key, values, module, config) do
-    with {:ok, attributes} <- extract_attributes(key, module),
+    with {:ok, attributes} <- extract_attributes(key, module, config),
          {:ok, predicate} <- get_predicate(key, config),
          {:ok, values} <- prepare_values(values) do
       %Condition{
@@ -59,11 +59,11 @@ defmodule ExSieve.Node.Condition do
     end
   end
 
-  defp extract_attributes(key, module) do
+  defp extract_attributes(key, module, config) do
     key
     |> String.split(~r/_(and|or)_/)
     |> Enum.reduce_while({:ok, []}, fn attr_key, {:ok, acc} ->
-      case Attribute.extract(attr_key, module) do
+      case Attribute.extract(attr_key, module, config) do
         {:error, _} = err -> {:halt, err}
         attribute -> {:cont, {:ok, [attribute | acc]}}
       end
