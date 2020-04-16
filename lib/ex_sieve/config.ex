@@ -1,11 +1,20 @@
 defmodule ExSieve.Config do
   @moduledoc """
-  A `ExSieve.Config` can be created with a `ignore_errors` true or false
-  ```
-  %ExSieve.Config{
-    ignore_errors: true
-  }
-  ```
+  This module defines the structure containing configuration parameters for `ex_sieve`.
+
+  The following options can be set:
+
+    * `ignore_errors` - whether to return an `{:error, _}` tuple as a result or to simply
+       ignore query parameters that generate errors, default `true`.
+
+    * `only_predicates` and `except_predicates` - list of strings containing respectively
+       the only accepted predicates or the excluded ones. If both are not `nil` then
+       `only_predicates` takes precedence. Both default to `nil`.
+
+    * `only_attributes` and `except_attributes` - list of strings containing respectively
+       the only accepted attributes or the excluded ones. If both are not `nil` then
+       `only_attributes` takes precedence. Both default to `nil`.
+
   """
   @defaults [
     ignore_errors: true,
@@ -17,7 +26,13 @@ defmodule ExSieve.Config do
 
   defstruct @defaults
 
-  @type t :: %__MODULE__{}
+  @type t :: %__MODULE__{
+          ignore_errors: boolean(),
+          except_predicates: [String.t()] | nil,
+          only_predicates: [String.t()] | nil,
+          except_attributes: [String.t()] | nil,
+          only_attributes: [String.t()] | nil
+        }
 
   @doc false
   @spec new(Keyword.t(), map | Keyword.t()) :: ExSieve.Config.t()
