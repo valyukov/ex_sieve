@@ -4,7 +4,13 @@ defmodule Money.Ecto.Type do
   def type, do: :integer
 
   def cast(%Money{} = money), do: {:ok, money}
-  def cast(_), do: :error
+
+  def cast(money) do
+    case Ecto.Type.cast(:integer, money) do
+      {:ok, int} -> {:ok, Money.new(int)}
+      _ -> :error
+    end
+  end
 
   def load(int) when is_integer(int), do: {:ok, Money.new(int)}
 
