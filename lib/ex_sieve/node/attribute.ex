@@ -7,26 +7,33 @@ defmodule ExSieve.Node.Attribute do
 
   @type t :: %__MODULE__{}
 
-  @spec extract(String.t(), atom) :: t | {:error, :attribute_not_found}
+  @spec extract(key :: String.t(), module | %{related: module}) :: t() | {:error, :attribute_not_found}
   def extract(key, module) do
-    case get_name(module, key) || get_assoc_name(module, key) do
-      nil -> {:error, :attribute_not_found}
-      {_assoc, nil} -> {:error, :attribute_not_found}
-      {assoc, name} -> %Attribute{parent: assoc, name: name}
-      name -> %Attribute{parent: :query, name: name}
+    extract(key, module, {:name, get_name(module, key)}, [])
+  end
+
+  defp extract(key, module, {:name, nil}, parents) do
+    extract(key, module, {:assoc, get_assoc(module, key)}, parents)
+  end
+
+  defp extract(_, _, {:name, name}, parents), do: %Attribute{parent: Enum.reverse(parents), name: name}
+
+  defp extract(_, _, {:assoc, nil}, _), do: {:error, :attribute_not_found}
+
+  defp extract(key, module, {:assoc, assoc}, parents) do
+    key = String.replace_prefix(key, "#{assoc}_", "")
+    module = get_assoc_module(module, assoc)
+    extract(key, module, {:name, get_name(module, key)}, [assoc | parents])
+  end
+
+  defp get_assoc_module(module, assoc) do
+    case module.__schema__(:association, assoc) do
+      %{related: module} -> module
+      module -> module
     end
   end
 
-  defp get_assoc_name(module, key) do
-    case get_assoc(module, key) do
-      nil ->
-        nil
-
-      assoc ->
-        key = String.replace_prefix(key, "#{assoc}_", "")
-        {assoc, get_name(module.__schema__(:association, assoc), key)}
-    end
-  end
+  defp get_assoc(%{related: module}, key), do: get_assoc(module, key)
 
   defp get_assoc(module, key) do
     :associations

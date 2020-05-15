@@ -12,6 +12,11 @@ defmodule ExSieve.Builder.OrderBy do
     end)
   end
 
-  defp dynamic_sort(:query, name), do: dynamic([p], field(p, ^name))
-  defp dynamic_sort(parent, name), do: dynamic([{^parent, p}], field(p, ^name))
+  defp dynamic_sort([], name), do: dynamic([p], field(p, ^name))
+  defp dynamic_sort([parent], name), do: dynamic([{^parent, p}], field(p, ^name))
+
+  defp dynamic_sort(parents, name) do
+    parent = parents |> Enum.join("_") |> String.to_atom()
+    dynamic([{^parent, p}], field(p, ^name))
+  end
 end

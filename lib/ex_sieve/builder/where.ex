@@ -35,132 +35,136 @@ defmodule ExSieve.Builder.Where do
     Enum.reduce(dynamics, dyn, fn dyn, acc -> dynamic(^acc or ^dyn) end)
   end
 
-  defp dynamic_predicate(:eq, %Attribute{parent: :query, name: name}, [value | _]) do
+  defp parent_name([parent]), do: parent
+
+  defp parent_name(parents), do: parents |> Enum.join("_") |> String.to_atom()
+
+  defp dynamic_predicate(:eq, %Attribute{parent: [], name: name}, [value | _]) do
     dynamic([p], field(p, ^name) == ^value)
   end
 
   defp dynamic_predicate(:eq, %Attribute{parent: parent, name: name}, [value | _]) do
-    dynamic([{^parent, p}], field(p, ^name) == ^value)
+    dynamic([{^parent_name(parent), p}], field(p, ^name) == ^value)
   end
 
-  defp dynamic_predicate(:not_eq, %Attribute{parent: :query, name: name}, [value | _]) do
+  defp dynamic_predicate(:not_eq, %Attribute{parent: [], name: name}, [value | _]) do
     dynamic([p], field(p, ^name) != ^value)
   end
 
   defp dynamic_predicate(:not_eq, %Attribute{parent: parent, name: name}, [value | _]) do
-    dynamic([{^parent, p}], field(p, ^name) != ^value)
+    dynamic([{^parent_name(parent), p}], field(p, ^name) != ^value)
   end
 
-  defp dynamic_predicate(:cont, %Attribute{parent: :query, name: name}, [value | _]) do
+  defp dynamic_predicate(:cont, %Attribute{parent: [], name: name}, [value | _]) do
     dynamic([p], ilike(field(p, ^name), ^"%#{value}%"))
   end
 
   defp dynamic_predicate(:cont, %Attribute{parent: parent, name: name}, [value | _]) do
-    dynamic([{^parent, p}], ilike(field(p, ^name), ^"%#{value}%"))
+    dynamic([{^parent_name(parent), p}], ilike(field(p, ^name), ^"%#{value}%"))
   end
 
-  defp dynamic_predicate(:not_cont, %Attribute{parent: :query, name: name}, [value | _]) do
+  defp dynamic_predicate(:not_cont, %Attribute{parent: [], name: name}, [value | _]) do
     dynamic([p], not ilike(field(p, ^name), ^"%#{value}%"))
   end
 
   defp dynamic_predicate(:not_cont, %Attribute{parent: parent, name: name}, [value | _]) do
-    dynamic([{^parent, p}], not ilike(field(p, ^name), ^"%#{value}%"))
+    dynamic([{^parent_name(parent), p}], not ilike(field(p, ^name), ^"%#{value}%"))
   end
 
-  defp dynamic_predicate(:lt, %Attribute{parent: :query, name: name}, [value | _]) do
+  defp dynamic_predicate(:lt, %Attribute{parent: [], name: name}, [value | _]) do
     dynamic([p], field(p, ^name) < ^value)
   end
 
   defp dynamic_predicate(:lt, %Attribute{parent: parent, name: name}, [value | _]) do
-    dynamic([{^parent, p}], field(p, ^name) < ^value)
+    dynamic([{^parent_name(parent), p}], field(p, ^name) < ^value)
   end
 
-  defp dynamic_predicate(:lteq, %Attribute{parent: :query, name: name}, [value | _]) do
+  defp dynamic_predicate(:lteq, %Attribute{parent: [], name: name}, [value | _]) do
     dynamic([p], field(p, ^name) <= ^value)
   end
 
   defp dynamic_predicate(:lteq, %Attribute{parent: parent, name: name}, [value | _]) do
-    dynamic([{^parent, p}], field(p, ^name) <= ^value)
+    dynamic([{^parent_name(parent), p}], field(p, ^name) <= ^value)
   end
 
-  defp dynamic_predicate(:gt, %Attribute{parent: :query, name: name}, [value | _]) do
+  defp dynamic_predicate(:gt, %Attribute{parent: [], name: name}, [value | _]) do
     dynamic([p], field(p, ^name) > ^value)
   end
 
   defp dynamic_predicate(:gt, %Attribute{parent: parent, name: name}, [value | _]) do
-    dynamic([{^parent, p}], field(p, ^name) > ^value)
+    dynamic([{^parent_name(parent), p}], field(p, ^name) > ^value)
   end
 
-  defp dynamic_predicate(:gteq, %Attribute{parent: :query, name: name}, [value | _]) do
+  defp dynamic_predicate(:gteq, %Attribute{parent: [], name: name}, [value | _]) do
     dynamic([p], field(p, ^name) >= ^value)
   end
 
   defp dynamic_predicate(:gteq, %Attribute{parent: parent, name: name}, [value | _]) do
-    dynamic([{^parent, p}], field(p, ^name) >= ^value)
+    dynamic([{^parent_name(parent), p}], field(p, ^name) >= ^value)
   end
 
-  defp dynamic_predicate(:in, %Attribute{parent: :query, name: name}, values) do
+  defp dynamic_predicate(:in, %Attribute{parent: [], name: name}, values) do
     dynamic([p], field(p, ^name) in ^values)
   end
 
   defp dynamic_predicate(:in, %Attribute{parent: parent, name: name}, values) do
-    dynamic([{^parent, p}], field(p, ^name) in ^values)
+    dynamic([{^parent_name(parent), p}], field(p, ^name) in ^values)
   end
 
-  defp dynamic_predicate(:not_in, %Attribute{parent: :query, name: name}, values) do
+  defp dynamic_predicate(:not_in, %Attribute{parent: [], name: name}, values) do
     dynamic([p], field(p, ^name) not in ^values)
   end
 
   defp dynamic_predicate(:not_in, %Attribute{parent: parent, name: name}, values) do
-    dynamic([{^parent, p}], field(p, ^name) not in ^values)
+    dynamic([{^parent_name(parent), p}], field(p, ^name) not in ^values)
   end
 
-  defp dynamic_predicate(:matches, %Attribute{parent: :query, name: name}, [value | _]) do
+  defp dynamic_predicate(:matches, %Attribute{parent: [], name: name}, [value | _]) do
     dynamic([p], ilike(field(p, ^name), ^value))
   end
 
   defp dynamic_predicate(:matches, %Attribute{parent: parent, name: name}, [value | _]) do
-    dynamic([{^parent, p}], ilike(field(p, ^name), ^value))
+    dynamic([{^parent_name(parent), p}], ilike(field(p, ^name), ^value))
   end
 
-  defp dynamic_predicate(:does_not_match, %Attribute{parent: :query, name: name}, [value | _]) do
+  defp dynamic_predicate(:does_not_match, %Attribute{parent: [], name: name}, [value | _]) do
     dynamic([p], not ilike(field(p, ^name), ^value))
   end
 
   defp dynamic_predicate(:does_not_match, %Attribute{parent: parent, name: name}, [value | _]) do
-    dynamic([{^parent, p}], not ilike(field(p, ^name), ^value))
+    dynamic([{^parent_name(parent), p}], not ilike(field(p, ^name), ^value))
   end
 
-  defp dynamic_predicate(:start, %Attribute{parent: :query, name: name}, [value | _]) do
+  defp dynamic_predicate(:start, %Attribute{parent: [], name: name}, [value | _]) do
     dynamic([p], ilike(field(p, ^name), ^"#{value}%"))
   end
 
   defp dynamic_predicate(:start, %Attribute{parent: parent, name: name}, [value | _]) do
-    dynamic([{^parent, p}], ilike(field(p, ^name), ^"#{value}%"))
+    dynamic([{^parent_name(parent), p}], ilike(field(p, ^name), ^"#{value}%"))
   end
 
-  defp dynamic_predicate(:not_start, %Attribute{parent: :query, name: name}, [value | _]) do
+  defp dynamic_predicate(:not_start, %Attribute{parent: [], name: name}, [value | _]) do
     dynamic([p], not ilike(field(p, ^name), ^"#{value}%"))
   end
 
   defp dynamic_predicate(:not_start, %Attribute{parent: parent, name: name}, [value | _]) do
-    dynamic([{^parent, p}], not ilike(field(p, ^name), ^"#{value}%"))
+    dynamic([{^parent_name(parent), p}], not ilike(field(p, ^name), ^"#{value}%"))
   end
 
-  defp dynamic_predicate(:end, %Attribute{parent: :query, name: name}, [value | _]) do
+  defp dynamic_predicate(:end, %Attribute{parent: [], name: name}, [value | _]) do
     dynamic([p], ilike(field(p, ^name), ^"%#{value}"))
   end
 
   defp dynamic_predicate(:end, %Attribute{parent: parent, name: name}, [value | _]) do
-    dynamic([{^parent, p}], ilike(field(p, ^name), ^"%#{value}"))
+    dynamic([{^parent_name(parent), p}], ilike(field(p, ^name), ^"%#{value}"))
   end
 
-  defp dynamic_predicate(:not_end, %Attribute{parent: :query, name: name}, [value | _]) do
+  defp dynamic_predicate(:not_end, %Attribute{parent: [], name: name}, [value | _]) do
     dynamic([p], not ilike(field(p, ^name), ^"%#{value}"))
   end
 
   defp dynamic_predicate(:not_end, %Attribute{parent: parent, name: name}, [value | _]) do
-    dynamic([{^parent, p}], not ilike(field(p, ^name), ^"%#{value}"))
+    dynamic([{^parent_name(parent), p}], not ilike(field(p, ^name), ^"%#{value}"))
   end
 
   defp dynamic_predicate(true, attribute, [value | _]) when value in @true_values do
@@ -179,36 +183,36 @@ defmodule ExSieve.Builder.Where do
     dynamic_predicate(:not_eq, attribute, [false])
   end
 
-  defp dynamic_predicate(:blank, %Attribute{parent: :query, name: name}, [value | _]) when value in @true_values do
+  defp dynamic_predicate(:blank, %Attribute{parent: [], name: name}, [value | _]) when value in @true_values do
     dynamic([p], is_nil(field(p, ^name)) or field(p, ^name) == ^"")
   end
 
   defp dynamic_predicate(:blank, %Attribute{parent: parent, name: name}, [value | _]) when value in @true_values do
-    dynamic([{^parent, p}], is_nil(field(p, ^name)) or field(p, ^name) == ^"")
+    dynamic([{^parent_name(parent), p}], is_nil(field(p, ^name)) or field(p, ^name) == ^"")
   end
 
-  defp dynamic_predicate(:null, %Attribute{parent: :query, name: name}, [value | _]) when value in @true_values do
+  defp dynamic_predicate(:null, %Attribute{parent: [], name: name}, [value | _]) when value in @true_values do
     dynamic([p], is_nil(field(p, ^name)))
   end
 
   defp dynamic_predicate(:null, %Attribute{parent: parent, name: name}, [value | _]) when value in @true_values do
-    dynamic([{^parent, p}], is_nil(field(p, ^name)))
+    dynamic([{^parent_name(parent), p}], is_nil(field(p, ^name)))
   end
 
-  defp dynamic_predicate(:not_null, %Attribute{parent: :query, name: name}, [value | _]) when value in @true_values do
+  defp dynamic_predicate(:not_null, %Attribute{parent: [], name: name}, [value | _]) when value in @true_values do
     dynamic([p], not is_nil(field(p, ^name)))
   end
 
   defp dynamic_predicate(:not_null, %Attribute{parent: parent, name: name}, [value | _]) when value in @true_values do
-    dynamic([{^parent, p}], not is_nil(field(p, ^name)))
+    dynamic([{^parent_name(parent), p}], not is_nil(field(p, ^name)))
   end
 
-  defp dynamic_predicate(:present, %Attribute{parent: :query, name: name}, [value | _]) when value in @true_values do
+  defp dynamic_predicate(:present, %Attribute{parent: [], name: name}, [value | _]) when value in @true_values do
     dynamic([p], not (is_nil(field(p, ^name)) or field(p, ^name) == ^""))
   end
 
   defp dynamic_predicate(:present, %Attribute{parent: parent, name: name}, [value | _]) when value in @true_values do
-    dynamic([{^parent, p}], not (is_nil(field(p, ^name)) or field(p, ^name) == ^""))
+    dynamic([{^parent_name(parent), p}], not (is_nil(field(p, ^name)) or field(p, ^name) == ^""))
   end
 
   for basic_predicate <- Condition.basic_predicates() do
