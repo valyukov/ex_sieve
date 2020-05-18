@@ -2,7 +2,7 @@ defmodule ExSieve.Builder.WhereTest do
   use ExUnit.Case
   import Ecto.Query
 
-  alias ExSieve.{Post, Config}
+  alias ExSieve.{Config, Post, User}
   alias ExSieve.Builder.Where
   alias ExSieve.Node.Grouping
 
@@ -61,6 +61,25 @@ defmodule ExSieve.Builder.WhereTest do
 
       ecto = Post |> where([p], field(p, :inserted_at) >= ^datetime) |> inspect()
       query = Post |> Where.build(grouping) |> inspect()
+
+      assert ecto == query
+    end
+
+    test "return Ecto.Query for nested relations" do
+      params = %{"m" => "or", "posts_comments_body_eq" => "test", "id_eq" => 1}
+      grouping = Grouping.extract(params, User, %Config{ignore_errors: true})
+
+      base =
+        User
+        |> join(:inner, [u], p in assoc(u, :posts), as: :posts)
+        |> join(:inner, [posts: p], c in assoc(p, :comments), as: :posts_comments)
+
+      ecto =
+        base
+        |> where([u, posts_comments: c], field(c, :body) == ^"test" or field(u, :id) == ^1)
+        |> inspect()
+
+      query = base |> Where.build(grouping) |> inspect()
 
       assert ecto == query
     end

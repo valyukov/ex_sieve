@@ -11,6 +11,7 @@ defmodule ExSieve.Mixfile do
       description: "Build filtred and sorted Ecto.Query struct from object based queries.",
       aliases: aliases(),
       deps: deps(),
+      test_coverage: [tool: ExCoveralls],
       dialyzer: [plt_add_deps: :transitive],
 
       # Docs
@@ -43,7 +44,8 @@ defmodule ExSieve.Mixfile do
       {:ex_doc, "~> 0.21", only: :dev},
       {:ex_machina, "~> 2.0", only: :test},
       {:ecto_sql, "~> 3.0", only: :test},
-      {:postgrex, "~> 0.15", only: :test}
+      {:postgrex, "~> 0.15", only: :test},
+      {:excoveralls, "~> 0.10", only: :test}
     ]
   end
 

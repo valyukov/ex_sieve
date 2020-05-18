@@ -1,7 +1,7 @@
 defmodule ExSieve.Node.ConditionTest do
   use ExUnit.Case
 
-  alias ExSieve.{Node.Condition, Comment}
+  alias ExSieve.{Node.Condition, Comment, User}
 
   describe "ExSieve.Node.Condition.extract/3" do
     test "return Condition with without combinator" do
@@ -50,6 +50,7 @@ defmodule ExSieve.Node.ConditionTest do
 
     test "return {:error, :attribute_not_found}" do
       assert {:error, :attribute_not_found} == Condition.extract("tid_eq", 1, Comment)
+      assert {:error, :attribute_not_found} == Condition.extract("posts_comments_foo_eq", 1, User)
     end
 
     test "return {:error, :value_is_empty}" do
