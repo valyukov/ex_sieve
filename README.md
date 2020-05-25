@@ -1,6 +1,6 @@
 # ExSieve
 
-![CI](https://github.com/valyukov/ex_sieve/workflows/CI/badge.svg?branch=master) [![Hex Version](http://img.shields.io/hexpm/v/ex_sieve.svg?style=flat)](https://hex.pm/packages/ex_sieve) [![Hex docs](http://img.shields.io/badge/hex.pm-docs-green.svg?style=flat)](https://hexdocs.pm/ex_sieve)
+![CI](https://github.com/valyukov/ex_sieve/workflows/CI/badge.svg?branch=master) [![Hex Version](http://img.shields.io/hexpm/v/ex_sieve.svg?style=flat)](https://hex.pm/packages/ex_sieve) [![Coverage Status](https://coveralls.io/repos/github/valyukov/ex_sieve/badge.svg?branch=master)](https://coveralls.io/github/valyukov/ex_sieve?branch=master) [![Hex docs](http://img.shields.io/badge/hex.pm-docs-green.svg?style=flat)](https://hexdocs.pm/ex_sieve)
 
 
 ExSieve is filttering solution for Phoenix/Ecto. It builds `Ecto.Query` struct from [ransack](https://github.com/activerecord-hackery/ransack) inspired query language.
