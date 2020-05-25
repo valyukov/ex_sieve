@@ -1,11 +1,15 @@
 # Changelog
+## 0.7.0 - 25/05/2020
+ * Require Elixir ~> 1.7
+ * Drop support for ecto 2.x, add support for ecto ~> 3.3
+
 ## 0.6.1
  * Bugfix release
 
 ## 0.6.0
  * Add compatability with ecto ~> 2.1, many thanks for @galina and @s33m4nn for their contribution;
- * Fix some bugs. 
- * Update dependencies. 
+ * Fix some bugs.
+ * Update dependencies.
 
 ## 0.5.0
  * All keys in query object convert to strings, you can use both String and atom in any keys.

@@ -4,14 +4,18 @@ defmodule ExSieve.Mixfile do
   def project do
     [
       app: :ex_sieve,
-      version: "0.6.1",
-      elixir: "~> 1.4",
+      version: "0.7.0",
+      elixir: "~> 1.7",
       elixirc_paths: elixirc_paths(Mix.env()),
       package: package(),
       description: "Build filtred and sorted Ecto.Query struct from object based queries.",
       aliases: aliases(),
       deps: deps(),
       dialyzer: [plt_add_deps: :transitive],
+
+      # Docs
+      name: "ExSieve",
+      source_url: "https://github.com/valyukov/ex_sieve",
       docs: [
         main: "readme",
         extras: [
@@ -55,7 +59,7 @@ defmodule ExSieve.Mixfile do
 
   defp package do
     [
-      maintainers: ["Vlad Alyukov"],
+      maintainers: ["Vlad Alyukov", "Alberto Sartori"],
       licenses: ["MIT"],
       links: %{"GitHub" => "https://github.com/valyukov/ex_sieve"},
       files: ["README.md", "LICENSE", "mix.exs", "lib/*", "CHANGELOG.md"]
