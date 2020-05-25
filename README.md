@@ -1,6 +1,6 @@
 # ExSieve
 
-[![Build Status](https://travis-ci.org/valyukov/ex_sieve.svg?branch=master)](https://travis-ci.org/valyukov/ex_sieve) [![Hex Version](http://img.shields.io/hexpm/v/ex_sieve.svg?style=flat)](https://hex.pm/packages/ex_sieve) [![Hex docs](http://img.shields.io/badge/hex.pm-docs-green.svg?style=flat)](https://hexdocs.pm/ex_sieve)
+![CI](https://github.com/valyukov/ex_sieve/workflows/CI/badge.svg?branch=master) [![Hex Version](http://img.shields.io/hexpm/v/ex_sieve.svg?style=flat)](https://hex.pm/packages/ex_sieve) [![Hex docs](http://img.shields.io/badge/hex.pm-docs-green.svg?style=flat)](https://hexdocs.pm/ex_sieve)
 
 
 ExSieve is filttering solution for Phoenix/Ecto. It builds `Ecto.Query` struct from [ransack](https://github.com/activerecord-hackery/ransack) inspired query language.
@@ -235,7 +235,7 @@ Also, you can read more about predicates on [ransack wiki page](https://github.c
 
 ### Advanced query
  Documentating in progress.
- 
+
 ## Contributing
 
 First, you'll need to build the test database.
