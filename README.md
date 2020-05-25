@@ -3,50 +3,54 @@
 ![CI](https://github.com/valyukov/ex_sieve/workflows/CI/badge.svg?branch=master) [![Hex Version](http://img.shields.io/hexpm/v/ex_sieve.svg?style=flat)](https://hex.pm/packages/ex_sieve) [![Coverage Status](https://coveralls.io/repos/github/valyukov/ex_sieve/badge.svg?branch=master)](https://coveralls.io/github/valyukov/ex_sieve?branch=master) [![Hex docs](http://img.shields.io/badge/hex.pm-docs-green.svg?style=flat)](https://hexdocs.pm/ex_sieve)
 
 
-ExSieve is filttering solution for Phoenix/Ecto. It builds `Ecto.Query` struct from [ransack](https://github.com/activerecord-hackery/ransack) inspired query language.
+ExSieve is a filtering solution for Phoenix/Ecto. It builds `Ecto.Query` structs from a [ransack](https://github.com/activerecord-hackery/ransack) inspired query language.
 
 ## Installation
 
-  1. Add `ex_sieve` to your list of dependencies in `mix.exs`:
+Add `ex_sieve` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
   [
-    {:ex_sieve, "~> 0.1.0"},
+    {:ex_sieve, "~> 0.7.0"},
   ]
 end
 ```
-
-or use this:
-
-```elixir
-def deps do
-  [
-    {:ex_sieve, github: "valyukov/ex_sieve"},
-  ]
-end
-```
-if you want to stick to mainstream
-
 
 ## Status
-This is a work in progress, here's what is done right now:
 
-- [WIP] Phoenix search form helpers
 - [ ] Add advanced search documentation
 - [ ] Custom query function (fragments or custom query functions)
 - [ ] Demo project
 
-## Uasage
+## Usage
 
-First, setup your application repo:
+Setup your application repo, using `ExSieve`
 
 ```elixir
 defmodule MyApp.Repo do
-  use Ecto.Repo, otp_app: :my_app
+  use Ecto.Repo,
+    otp_app: :my_app,
+    adapter: Ecto.Adapters.Postgres
+
   use ExSieve
 end
 ```
+
+and use the provided `filter` function for filtering entries based on query parameters
+
+
+```elixir
+def index(conn, %{"q"=> params}) do
+  posts = MyApp.Repo.filter(MyApp.Post, params)
+
+  render conn, :index, posts: posts
+end
+```
+
+### Examples
+
+In the following we assume these schemas are defined in your application:
 
 ```elixir
 defmodule MyApp.Post do
@@ -59,7 +63,7 @@ defmodule MyApp.Post do
     field :body
     field :published, :boolean
 
-    timestamps
+    timestamps()
   end
 end
 ```
@@ -73,33 +77,28 @@ defmodule MyApp.Comment do
 
     field :body
 
-    timestamps
+    timestamps()
   end
 end
 ```
 
-```elixir
-def index(conn, %{"q"=> params}) do
-  posts = MyApp.Post |> MyApp.Repo.filter(params)
+#### Simple query
 
-  render conn, :index, posts: posts
-end
-```
-
-Simple query:
+Given this json representation of the query
 
 ```json
 {
   "m": "or",
-  "q": {
-    "id_in": [1,2],
-    "title_and_body_cont": "text",
-    "comments_body_eq": "body",
-    "sort": ["title desc", "inserted_at asc"]
+  "id_in": [1, 2],
+  "title_and_body_cont": "text",
+  "comments_body_eq": "body",
+  "s": ["title desc", "inserted_at asc"]
 }
 
 ```
-this is how query translate to the next SQL:
+
+the following SQL query is sent to the database
+
 ```sql
 SELECT posts.* FROM posts INNER JOIN comments ON posts.id = comments.post_id \
   WHERE posts.id IN (1, 2) \
@@ -108,7 +107,42 @@ SELECT posts.* FROM posts INNER JOIN comments ON posts.id = comments.post_id \
   ORDER BY posts.title DESC, posts.inserted_at ASC;
 ```
 
-Full list of supported predicates:
+#### Grouping queries
+
+Query fields can be nested for obtaining more advanced filters.
+
+Given this json representation of the query
+
+```json
+{
+  "m": "and",
+  "id_in": [1, 2],
+  "g": [
+    {
+      "m": "or",
+      "c": {
+        "title_and_body_cont": "text",
+        "comments_body_eq": "body"
+      }
+    }
+  ],
+  "s": ["title desc", "inserted_at asc"]
+}
+
+```
+
+the following SQL query is sent to the database
+
+```sql
+SELECT posts.* FROM posts INNER JOIN comments ON posts.id = comments.post_id \
+  WHERE posts.id IN (1, 2) \
+  AND ( \
+    (posts.title ILIKE '%text%' AND posts.body ILIKE '%text%') \
+    OR comments.body == "body") \
+  ORDER BY posts.title DESC, posts.inserted_at ASC;
+```
+
+### Supported predicates
 
 #### Base predicates
 ```
@@ -137,7 +171,8 @@ blank
 null
 not_null
 ```
-### All predicates
+
+#### All predicates
 ```
 eq
 not_eq
@@ -219,34 +254,20 @@ or
 and
 ```
 
-Example query key value with combinator:
-
-```json
-{
-  "q": {
-    "title_or_body_cont": "text",
-    "inserted_at_and_updated_at_gteq": "2016-09-16T21:32:06"
-   }
-}
-```
-
-Also, you can read more about predicates on [ransack wiki page](https://github.com/activerecord-hackery/ransack/wiki/Basic-Searching)
-
-
-### Advanced query
- Documentating in progress.
+You can read more about predicates on [ransack wiki page](https://github.com/activerecord-hackery/ransack/wiki/Basic-Searching).
 
 ## Contributing
 
 First, you'll need to build the test database.
 
 ```elixir
-MIX_ENV=test mix ecto.reset
+DB_PASSWORD=<db_password> MIX_ENV=test mix ecto.reset
 ```
 
-This task assumes you have postgres installed and that your current user can create / drop databases. If you'd prefer to use a different user, you can specify it with the environment variable `DB_USER`.
+This task assumes you have postgres installed and that your current user can create / drop databases.
+If you'd prefer to use a different user, you can specify it with the environment variable `DB_USER`.
 
-When the database built, you can now run the tests.
+When the database is built, you can run the tests.
 
 ```elixir
 mix test
