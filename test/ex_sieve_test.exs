@@ -9,7 +9,7 @@ defmodule ExSieveTest do
     {:ok, config: %Config{ignore_errors: false}}
   end
 
-  describe "ExSieve.filter/3" do
+  describe "ExSieve.Filter.filter/3" do
     test "return ordered by id and body", %{config: config} do
       [%{body: body} | _] = insert_pair(:post)
 
@@ -55,6 +55,10 @@ defmodule ExSieveTest do
       insert_pair(:user)
       ids = User |> ExSieve.Filter.filter(%{"cash_lteq" => %Money{amount: 1000}}, config) |> ids()
       assert ids == ids(User)
+    end
+
+    test "return error with invalid queries", %{config: config} do
+      assert {:error, :invalid_query} = ExSieve.Filter.filter(InvalidUser, %{}, config)
     end
   end
 
