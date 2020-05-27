@@ -34,19 +34,31 @@ defmodule ExSieve do
     end
   end
 
-  @typep error :: :attribute_not_found | :predicate_not_found | :direction_not_found | :value_is_empty
+  @typep error :: :invalid_query | :attribute_not_found | :predicate_not_found | :direction_not_found | :value_is_empty
   @type result :: Ecto.Query.t() | {:error, error}
 
   @spec filter(Ecto.Queryable.t(), %{(binary | atom) => term}, Config.t()) :: result
   def filter(queryable, params, %Config{} = config) do
-    params
-    |> Node.call(extract_schema(queryable), config)
-    |> result(queryable)
+    case extract_schema(queryable) do
+      {:ok, schema} ->
+        params
+        |> Node.call(schema, config)
+        |> result(queryable)
+
+      err ->
+        err
+    end
   end
 
   defp result({:error, reason}, _queryable), do: {:error, reason}
   defp result({:ok, groupings, sorts}, queryable), do: Builder.call(queryable, groupings, sorts)
 
-  defp extract_schema(%{from: {_, schema}}), do: schema
-  defp extract_schema(schema), do: schema
+  defp extract_schema(%Ecto.Query{from: %{source: {_, module}}}), do: extract_schema(module)
+
+  defp extract_schema(schema) when is_atom(schema) do
+    cond do
+      function_exported?(schema, :__schema__, 1) -> {:ok, schema}
+      true -> {:error, :invalid_query}
+    end
+  end
 end
