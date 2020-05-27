@@ -60,7 +60,16 @@ defmodule ExSieve.Builder.Join do
     end)
   end
 
-  defp apply_join({parent, relation} = pr, query) do
+  defp apply_join(parent_relation, query) do
+    binding_name = join_as(parent_relation)
+
+    case Ecto.Query.has_named_binding?(query, binding_name) do
+      true -> query
+      false -> do_apply_join(parent_relation, query)
+    end
+  end
+
+  defp do_apply_join({parent, relation} = pr, query) do
     query
     |> Macro.escape()
     |> Join.build(:inner, join_binding(parent), expr(relation), nil, nil, join_as(pr), nil, nil, __ENV__)
