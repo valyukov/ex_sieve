@@ -17,11 +17,19 @@ def deps do
 end
 ```
 
-## Status
+## Nice to have
 
-- [ ] Add advanced search documentation
-- [ ] Custom query function (fragments or custom query functions)
-- [ ] Demo project
+- Add advanced search documentation
+- Custom query function (fragments or custom query functions)
+- Demo project
+
+## Ecto internals currently used
+
+- `Ecto.Query.Builder.Join.join/10` function needed beacuse dynamic joins are not available
+
+- `%Ecto.Query{from: %{source: {_, module}}}`
+  Ecto.query struct internal structure, needed for extracting the main `Ecto.Schema` of the query
+
 
 ## Usage
 
@@ -37,7 +45,7 @@ defmodule MyApp.Repo do
 end
 ```
 
-and use the provided `filter` function for filtering entries based on query parameters
+and use the provided `c:ExSieve.filter/3` callback for filtering entries based on query parameters
 
 
 ```elixir

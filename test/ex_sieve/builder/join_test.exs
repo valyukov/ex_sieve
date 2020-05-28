@@ -60,5 +60,27 @@ defmodule ExSieve.Builder.JoinTest do
 
       assert original == built
     end
+
+    test "work with from queries" do
+      grouping = sample_grouping(name: [])
+
+      original = from(u in User) |> (&Ecto.Adapters.SQL.to_sql(:all, ExSieve.Repo, &1)).()
+      built = User |> Join.build(grouping, []) |> (&Ecto.Adapters.SQL.to_sql(:all, ExSieve.Repo, &1)).()
+
+      assert original == built
+    end
+
+    test "work with existent joins" do
+      grouping = sample_grouping(title: [:posts])
+
+      original =
+        User
+        |> join(:inner, [u], p in assoc(u, :posts), as: :posts)
+        |> inspect()
+
+      built = User |> Join.build(grouping, []) |> inspect()
+
+      assert original == built
+    end
   end
 end
