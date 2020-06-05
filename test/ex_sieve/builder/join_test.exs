@@ -6,11 +6,18 @@ defmodule ExSieve.Builder.JoinTest do
   alias ExSieve.Builder.Join
   alias ExSieve.Node.{Attribute, Condition, Grouping, Sort}
 
+  @types %{
+    body: :string,
+    name: :string,
+    title: :string
+  }
+
   defp sample_grouping(attrs) do
     %Grouping{
       conditions: [
         %Condition{
-          attributes: Enum.map(attrs, fn {name, parent} -> %Attribute{name: name, parent: parent} end),
+          attributes:
+            Enum.map(attrs, fn {name, parent} -> %Attribute{name: name, parent: parent, type: Map.get(@types, name)} end),
           combinator: :and,
           predicate: :eq,
           values: ["foo"]
@@ -46,7 +53,7 @@ defmodule ExSieve.Builder.JoinTest do
     end
 
     test "correctly handle nested relations" do
-      sorts = [%Sort{direction: :asc, attribute: %Attribute{name: :title, parent: [:posts]}}]
+      sorts = [%Sort{direction: :asc, attribute: %Attribute{name: :title, parent: [:posts], type: :string}}]
       grouping = sample_grouping(body: [:posts, :comments], body: [:comments])
 
       original =

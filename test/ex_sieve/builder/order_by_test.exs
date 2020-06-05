@@ -8,7 +8,7 @@ defmodule ExSieve.Builder.OrderByTest do
 
   describe "ExSieve.Builder.OrderBy.build/3" do
     test "return Ecto.Query with order by asc id" do
-      sorts = [%Sort{direction: :asc, attribute: %Attribute{name: :id, parent: []}}]
+      sorts = [%Sort{direction: :asc, attribute: %Attribute{name: :id, parent: [], type: :id}}]
 
       original = Comment |> order_by(asc: :id) |> inspect()
       built = Comment |> OrderBy.build(sorts) |> inspect()
@@ -17,8 +17,8 @@ defmodule ExSieve.Builder.OrderByTest do
 
     test "return Ecto.Query order by asc id and post body" do
       sorts = [
-        %Sort{direction: :asc, attribute: %Attribute{name: :id, parent: []}},
-        %Sort{direction: :desc, attribute: %Attribute{name: :body, parent: [:comments]}}
+        %Sort{direction: :asc, attribute: %Attribute{name: :id, parent: [], type: :id}},
+        %Sort{direction: :desc, attribute: %Attribute{name: :body, parent: [:comments], type: :string}}
       ]
 
       base = from(from(p in Post, join: c in assoc(p, :comments), as: :comments))
@@ -29,7 +29,7 @@ defmodule ExSieve.Builder.OrderByTest do
     end
 
     test "correctly handle nested relations" do
-      sorts = [%Sort{direction: :desc, attribute: %Attribute{name: :body, parent: [:posts, :comments]}}]
+      sorts = [%Sort{direction: :desc, attribute: %Attribute{name: :body, parent: [:posts, :comments], type: :string}}]
 
       base =
         User

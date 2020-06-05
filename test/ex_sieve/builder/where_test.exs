@@ -83,5 +83,15 @@ defmodule ExSieve.Builder.WhereTest do
 
       assert ecto == query
     end
+
+    test "discard params with invalid type" do
+      params = %{"published_start" => "foo", "title_cont" => "bar"}
+      grouping = Grouping.extract(params, Post, %Config{ignore_errors: true})
+
+      ecto = Post |> where([p], ilike(field(p, :title), ^"%bar%") and true) |> inspect()
+      query = Post |> Where.build(grouping) |> inspect()
+
+      assert ecto == query
+    end
   end
 end

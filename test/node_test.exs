@@ -10,13 +10,13 @@ defmodule ExSieve.NodeTest do
 
   describe "ExSieve.Node.call/2" do
     test "return {list(Grouping.t), list(Sort.t)}", %{config: config} do
-      sort = %Sort{direction: :asc, attribute: %Attribute{name: :body, parent: [:post]}}
+      sort = %Sort{direction: :asc, attribute: %Attribute{name: :body, parent: [:post], type: :string}}
 
       grouping = %Grouping{
         combinator: :and,
         conditions: [
           %Condition{
-            attributes: [%Attribute{name: :id, parent: []}],
+            attributes: [%Attribute{name: :id, parent: [], type: :id}],
             combinator: :and,
             predicate: :eq,
             values: [1]
@@ -31,13 +31,13 @@ defmodule ExSieve.NodeTest do
     end
 
     test "return {list(Grouping.t), list(Sort.t)} for params with mixed keys", %{config: config} do
-      sort = %Sort{direction: :asc, attribute: %Attribute{name: :body, parent: [:post]}}
+      sort = %Sort{direction: :asc, attribute: %Attribute{name: :body, parent: [:post], type: :string}}
 
       grouping = %Grouping{
         combinator: :and,
         conditions: [
           %Condition{
-            attributes: [%Attribute{name: :id, parent: []}],
+            attributes: [%Attribute{name: :id, parent: [], type: :id}],
             combinator: :and,
             predicate: :eq,
             values: [1]
@@ -53,15 +53,15 @@ defmodule ExSieve.NodeTest do
 
     test "return {list(Grouping.t), list(Sort.t)} with nested groupings", %{config: config} do
       sorts = [
-        %Sort{direction: :desc, attribute: %Attribute{name: :id, parent: []}},
-        %Sort{direction: :asc, attribute: %Attribute{name: :body, parent: [:post]}}
+        %Sort{direction: :desc, attribute: %Attribute{name: :id, parent: [], type: :id}},
+        %Sort{direction: :asc, attribute: %Attribute{name: :body, parent: [:post], type: :string}}
       ]
 
       grouping = %Grouping{
         combinator: :or,
         conditions: [
           %Condition{
-            attributes: [%Attribute{name: :id, parent: []}],
+            attributes: [%Attribute{name: :id, parent: [], type: :id}],
             combinator: :and,
             predicate: :eq,
             values: [1]
@@ -72,7 +72,7 @@ defmodule ExSieve.NodeTest do
             combinator: :and,
             conditions: [
               %Condition{
-                attributes: [%Attribute{name: :title, parent: [:post]}],
+                attributes: [%Attribute{name: :title, parent: [:post], type: :string}],
                 combinator: :and,
                 predicate: :eq,
                 values: [1]
