@@ -24,7 +24,7 @@ defmodule ExSieve.Builder.WhereTest do
       grouping = Grouping.extract(params, Post, %Config{ignore_errors: true})
 
       base = from(from(p in Post, join: c in assoc(p, :comments), as: :comments))
-      ecto = base |> where([p, c], field(p, :id) == ^1 or field(c, :body) == ^"test") |> inspect()
+      ecto = base |> where([p, c], field(c, :body) == ^"test" or field(p, :id) == ^1) |> inspect()
 
       query = base |> Where.build(grouping) |> inspect()
 
@@ -53,7 +53,7 @@ defmodule ExSieve.Builder.WhereTest do
         common
         |> where(
           [p, c, u],
-          c.body == ^"test" and ((ilike(u.name, ^"%1%") or ilike(u.name, ^"%2%")) and c.user_id in ^[1])
+          c.body == ^"test" and (c.user_id in ^[1] and (ilike(u.name, ^"%1%") or ilike(u.name, ^"%2%")))
         )
         |> inspect
 
@@ -88,7 +88,7 @@ defmodule ExSieve.Builder.WhereTest do
 
       ecto =
         base
-        |> where([u, posts_comments: c], field(c, :body) == ^"test" or field(u, :id) == ^1)
+        |> where([u, posts_comments: c], field(u, :id) == ^1 or field(c, :body) == ^"test")
         |> inspect()
 
       query = base |> Where.build(grouping) |> inspect()
@@ -100,7 +100,7 @@ defmodule ExSieve.Builder.WhereTest do
       params = %{"published_start" => "foo", "title_cont" => "bar"}
       grouping = Grouping.extract(params, Post, %Config{ignore_errors: true})
 
-      ecto = Post |> where([p], ilike(field(p, :title), ^"%bar%") and true) |> inspect()
+      ecto = Post |> where([p], true and ilike(field(p, :title), ^"%bar%")) |> inspect()
       query = Post |> Where.build(grouping) |> inspect()
 
       assert ecto == query

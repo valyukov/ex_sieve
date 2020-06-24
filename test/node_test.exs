@@ -53,8 +53,8 @@ defmodule ExSieve.NodeTest do
 
     test "return {list(Grouping.t), list(Sort.t)} with nested groupings", %{config: config} do
       sorts = [
-        %Sort{direction: :desc, attribute: %Attribute{name: :id, parent: [], type: :id}},
-        %Sort{direction: :asc, attribute: %Attribute{name: :body, parent: [:post], type: :string}}
+        %Sort{direction: :asc, attribute: %Attribute{name: :body, parent: [:post], type: :string}},
+        %Sort{direction: :desc, attribute: %Attribute{name: :id, parent: [], type: :id}}
       ]
 
       grouping = %Grouping{
