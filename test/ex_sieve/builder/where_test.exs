@@ -6,16 +6,26 @@ defmodule ExSieve.Builder.WhereTest do
   alias ExSieve.Builder.Where
   alias ExSieve.Node.Grouping
 
-  defp ex_sieve_post_query(params, false) do
-    grouping = Grouping.extract(params, Post, %Config{ignore_errors: true})
-    {Post, Post |> Where.build(grouping) |> inspect()}
+  def where_build(queryable, grouping, config \\ %Config{ignore_errors: true}, inspect? \\ true) do
+    case {inspect?, Where.build(queryable, grouping, config)} do
+      {true, {:ok, query}} -> inspect(query)
+      {_, {:ok, query}} -> query
+      {_, err} -> err
+    end
   end
 
-  defp ex_sieve_post_query(params, true) do
+  defp ex_sieve_post_query(params, nested, ignore_errors \\ true, inspect? \\ true)
+
+  defp ex_sieve_post_query(params, _nested = false, ignore_errors, inspect?) do
+    grouping = Grouping.extract(params, Post, %Config{ignore_errors: true})
+    {Post, where_build(Post, grouping, %Config{ignore_errors: ignore_errors}, inspect?)}
+  end
+
+  defp ex_sieve_post_query(params, _nested = true, ignore_errors, inspect?) do
     params = Map.new(params, fn {key, value} -> {"posts_#{key}", value} end)
     grouping = Grouping.extract(params, User, %Config{ignore_errors: true})
     base = from(u in User, join: p in assoc(u, :posts), as: :posts)
-    {base, base |> Where.build(grouping) |> inspect()}
+    {base, where_build(base, grouping, %Config{ignore_errors: ignore_errors}, inspect?)}
   end
 
   describe "ExSieve.Builder.Where.build/3" do
@@ -26,9 +36,7 @@ defmodule ExSieve.Builder.WhereTest do
       base = from(from(p in Post, join: c in assoc(p, :comments), as: :comments))
       ecto = base |> where([p, c], field(c, :body) == ^"test" or field(p, :id) == ^1) |> inspect()
 
-      query = base |> Where.build(grouping) |> inspect()
-
-      assert ecto == query
+      assert ecto == where_build(base, grouping)
     end
 
     test "return Ecto.Query for advanced grouping" do
@@ -57,12 +65,7 @@ defmodule ExSieve.Builder.WhereTest do
         )
         |> inspect
 
-      query =
-        common
-        |> Where.build(grouping)
-        |> inspect()
-
-      assert ecto == query
+      assert ecto == where_build(common, grouping)
     end
 
     test "return Ecto.Query with cast datetime" do
@@ -72,9 +75,8 @@ defmodule ExSieve.Builder.WhereTest do
       grouping = Grouping.extract(params, Post, %Config{ignore_errors: true})
 
       ecto = Post |> where([p], field(p, :inserted_at) >= ^datetime) |> inspect()
-      query = Post |> Where.build(grouping) |> inspect()
 
-      assert ecto == query
+      assert ecto == where_build(Post, grouping)
     end
 
     test "return Ecto.Query for nested relations" do
@@ -91,9 +93,7 @@ defmodule ExSieve.Builder.WhereTest do
         |> where([u, posts_comments: c], field(u, :id) == ^1 or field(c, :body) == ^"test")
         |> inspect()
 
-      query = base |> Where.build(grouping) |> inspect()
-
-      assert ecto == query
+      assert ecto == where_build(base, grouping)
     end
 
     test "discard params with invalid type" do
@@ -101,9 +101,8 @@ defmodule ExSieve.Builder.WhereTest do
       grouping = Grouping.extract(params, Post, %Config{ignore_errors: true})
 
       ecto = Post |> where([p], true and ilike(field(p, :title), ^"%bar%")) |> inspect()
-      query = Post |> Where.build(grouping) |> inspect()
 
-      assert ecto == query
+      assert ecto == where_build(Post, grouping)
     end
 
     test ":eq" do
@@ -137,6 +136,9 @@ defmodule ExSieve.Builder.WhereTest do
 
       {base, ex_sieve} = ex_sieve_post_query(%{"id_cont" => 1}, false)
       assert inspect(base) == ex_sieve
+
+      {_base, ex_sieve} = ex_sieve_post_query(%{"id_cont" => 1}, false, false, false)
+      assert {:error, _} = ex_sieve
     end
 
     test ":not_cont" do
@@ -150,6 +152,9 @@ defmodule ExSieve.Builder.WhereTest do
 
       {base, ex_sieve} = ex_sieve_post_query(%{"id_not_cont" => 1}, false)
       assert inspect(base) == ex_sieve
+
+      {_base, ex_sieve} = ex_sieve_post_query(%{"id_not_cont" => 1}, false, false, false)
+      assert {:error, _} = ex_sieve
     end
 
     test ":lt" do
@@ -223,6 +228,9 @@ defmodule ExSieve.Builder.WhereTest do
 
       {base, ex_sieve} = ex_sieve_post_query(%{"published_matches" => true}, false)
       assert inspect(base) == ex_sieve
+
+      {_base, ex_sieve} = ex_sieve_post_query(%{"published_matches" => true}, false, false, false)
+      assert {:error, _} = ex_sieve
     end
 
     test ":does_not_match" do
@@ -236,6 +244,9 @@ defmodule ExSieve.Builder.WhereTest do
 
       {base, ex_sieve} = ex_sieve_post_query(%{"published_at_does_not_match" => true}, false)
       assert inspect(base) == ex_sieve
+
+      {_base, ex_sieve} = ex_sieve_post_query(%{"published_at_does_not_match" => true}, false, false, false)
+      assert {:error, _} = ex_sieve
     end
 
     test ":start" do
@@ -249,6 +260,9 @@ defmodule ExSieve.Builder.WhereTest do
 
       {base, ex_sieve} = ex_sieve_post_query(%{"published_start" => true}, false)
       assert inspect(base) == ex_sieve
+
+      {_base, ex_sieve} = ex_sieve_post_query(%{"published_start" => true}, false, false, false)
+      assert {:error, _} = ex_sieve
     end
 
     test ":not_start" do
@@ -262,6 +276,9 @@ defmodule ExSieve.Builder.WhereTest do
 
       {base, ex_sieve} = ex_sieve_post_query(%{"published_not_start" => true}, false)
       assert inspect(base) == ex_sieve
+
+      {_base, ex_sieve} = ex_sieve_post_query(%{"published_not_start" => true}, false, false, false)
+      assert {:error, _} = ex_sieve
     end
 
     test ":end" do
@@ -273,8 +290,11 @@ defmodule ExSieve.Builder.WhereTest do
       query = base |> where([posts: p], ilike(field(p, :title), ^"%foo")) |> inspect()
       assert query == ex_sieve
 
-      {base, ex_sieve} = ex_sieve_post_query(%{"published_start" => true}, false)
+      {base, ex_sieve} = ex_sieve_post_query(%{"published_end" => true}, false)
       assert inspect(base) == ex_sieve
+
+      {_base, ex_sieve} = ex_sieve_post_query(%{"published_end" => true}, false, false, false)
+      assert {:error, _} = ex_sieve
     end
 
     test ":not_end" do
@@ -286,8 +306,11 @@ defmodule ExSieve.Builder.WhereTest do
       query = base |> where([posts: p], not ilike(field(p, :title), ^"%foo")) |> inspect()
       assert query == ex_sieve
 
-      {base, ex_sieve} = ex_sieve_post_query(%{"published_not_start" => true}, false)
+      {base, ex_sieve} = ex_sieve_post_query(%{"published_not_end" => true}, false)
       assert inspect(base) == ex_sieve
+
+      {_base, ex_sieve} = ex_sieve_post_query(%{"published_not_end" => true}, false, false, false)
+      assert {:error, _} = ex_sieve
     end
 
     test ":true" do
@@ -301,6 +324,9 @@ defmodule ExSieve.Builder.WhereTest do
 
       {base, ex_sieve} = ex_sieve_post_query(%{"title_true" => true}, false)
       assert inspect(base) == ex_sieve
+
+      {_base, ex_sieve} = ex_sieve_post_query(%{"title_true" => true}, false, false, false)
+      assert {:error, _} = ex_sieve
     end
 
     test ":not_true" do
@@ -314,6 +340,9 @@ defmodule ExSieve.Builder.WhereTest do
 
       {base, ex_sieve} = ex_sieve_post_query(%{"title_not_true" => true}, false)
       assert inspect(base) == ex_sieve
+
+      {_base, ex_sieve} = ex_sieve_post_query(%{"title_not_true" => true}, false, false, false)
+      assert {:error, _} = ex_sieve
     end
 
     test ":false" do
@@ -325,8 +354,11 @@ defmodule ExSieve.Builder.WhereTest do
       query = base |> where([posts: p], field(p, :published) == ^false) |> inspect()
       assert query == ex_sieve
 
-      {base, ex_sieve} = ex_sieve_post_query(%{"title_true" => false}, false)
+      {base, ex_sieve} = ex_sieve_post_query(%{"title_false" => true}, false)
       assert inspect(base) == ex_sieve
+
+      {_base, ex_sieve} = ex_sieve_post_query(%{"title_false" => true}, false, false, false)
+      assert {:error, _} = ex_sieve
     end
 
     test ":not_false" do
@@ -338,8 +370,11 @@ defmodule ExSieve.Builder.WhereTest do
       query = base |> where([posts: p], field(p, :published) != ^false) |> inspect()
       assert query == ex_sieve
 
-      {base, ex_sieve} = ex_sieve_post_query(%{"title_not_false" => false}, false)
+      {base, ex_sieve} = ex_sieve_post_query(%{"title_not_false" => true}, false)
       assert inspect(base) == ex_sieve
+
+      {_base, ex_sieve} = ex_sieve_post_query(%{"title_not_false" => true}, false, false, false)
+      assert {:error, _} = ex_sieve
     end
 
     test ":blank" do
@@ -353,6 +388,9 @@ defmodule ExSieve.Builder.WhereTest do
 
       {base, ex_sieve} = ex_sieve_post_query(%{"published_blank" => true}, false)
       assert inspect(base) == ex_sieve
+
+      {_base, ex_sieve} = ex_sieve_post_query(%{"published_blank" => true}, false, false, false)
+      assert {:error, _} = ex_sieve
     end
 
     test ":present" do
@@ -366,6 +404,9 @@ defmodule ExSieve.Builder.WhereTest do
 
       {base, ex_sieve} = ex_sieve_post_query(%{"published_present" => true}, false)
       assert inspect(base) == ex_sieve
+
+      {_base, ex_sieve} = ex_sieve_post_query(%{"published_present" => true}, false, false, false)
+      assert {:error, _} = ex_sieve
     end
 
     test ":null" do

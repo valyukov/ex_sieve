@@ -3,10 +3,10 @@ defmodule ExSieve.Builder.Join do
   alias Ecto.Query.Builder.Join
   alias ExSieve.Node.{Grouping, Sort}
 
-  @spec build(Ecto.Queryable.t(), Grouping.t(), list(Sort.t())) :: Ecto.Query.t()
+  @spec build(Ecto.Queryable.t(), Grouping.t(), list(Sort.t())) :: {:ok, Ecto.Query.t()}
   def build(query, grouping, sorts) do
     relations = build_relations(grouping, sorts)
-    Enum.reduce(relations, query, &apply_join/2)
+    {:ok, Enum.reduce(relations, query, &apply_join/2)}
   end
 
   defp build_relations(grouping, sorts) do

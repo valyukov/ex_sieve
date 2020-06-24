@@ -2,25 +2,36 @@ defmodule ExSieve.Builder.Where do
   @moduledoc false
   import Ecto.Query
 
+  alias ExSieve.{Config, Utils}
   alias ExSieve.Node.{Attribute, Condition, Grouping}
 
   @true_values [1, true, "1", "T", "t", "true", "TRUE"]
 
-  @spec build(Ecto.Queryable.t(), Grouping.t()) :: Ecto.Query.t()
-  def build(query, %Grouping{combinator: combinator} = grouping) when combinator in ~w(and or)a do
-    where(query, ^dynamic_grouping(grouping))
+  @spec build(Ecto.Queryable.t(), Grouping.t(), Config.t()) :: {:ok, Ecto.Query.t()} | {:error, any()}
+  def build(query, %Grouping{combinator: combinator} = grouping, config) when combinator in ~w(and or)a do
+    case dynamic_grouping(grouping, config) do
+      {:error, _} = err -> err
+      where_clause -> {:ok, where(query, ^where_clause)}
+    end
   end
 
-  defp dynamic_grouping(%Grouping{conditions: conditions, groupings: groupings, combinator: combinator}) do
+  defp dynamic_grouping(%Grouping{conditions: conditions, groupings: groupings, combinator: combinator}, config) do
     conditions
     |> Enum.map(fn
       %Condition{attributes: attrs, values: vals, predicate: predicate, combinator: combinator} ->
         attrs
         |> Enum.map(fn attr -> dynamic_predicate(predicate, attr, vals) end)
-        |> combine(combinator)
+        |> combine(combinator, config)
     end)
-    |> Kernel.++(Enum.map(groupings, &dynamic_grouping/1))
-    |> combine(combinator)
+    |> Kernel.++(Enum.map(groupings, &dynamic_grouping(&1, config)))
+    |> combine(combinator, config)
+  end
+
+  defp combine(dynamics, combinator, config) do
+    case Utils.get_error(dynamics, config) do
+      {:error, _} = err -> err
+      dynamics -> combine(dynamics, combinator)
+    end
   end
 
   defp combine([], _), do: dynamic(true)
@@ -249,5 +260,5 @@ defmodule ExSieve.Builder.Where do
     end
   end
 
-  defp dynamic_predicate(_predicate, _attribute, _values), do: dynamic(true)
+  defp dynamic_predicate(_predicate, _attribute, _values), do: {:error, :invalid_type}
 end

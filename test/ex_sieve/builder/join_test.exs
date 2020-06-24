@@ -12,6 +12,13 @@ defmodule ExSieve.Builder.JoinTest do
     title: :string
   }
 
+  def join_build(queryable, groupings, sorts) do
+    case Join.build(queryable, groupings, sorts) do
+      {:ok, query} -> query
+      err -> err
+    end
+  end
+
   defp sample_grouping(attrs) do
     %Grouping{
       conditions: [
@@ -33,7 +40,7 @@ defmodule ExSieve.Builder.JoinTest do
       grouping = sample_grouping(body: [:comments])
 
       original = Post |> join(:inner, [p], c in assoc(p, :comments), as: :comments) |> inspect()
-      built = Post |> Join.build(grouping, []) |> inspect()
+      built = Post |> join_build(grouping, []) |> inspect()
 
       assert original == built
     end
@@ -47,7 +54,7 @@ defmodule ExSieve.Builder.JoinTest do
         |> join(:inner, [p], c in assoc(p, :user), as: :user)
         |> inspect()
 
-      built = Post |> Join.build(grouping, []) |> inspect()
+      built = Post |> join_build(grouping, []) |> inspect()
 
       assert original == built
     end
@@ -63,7 +70,7 @@ defmodule ExSieve.Builder.JoinTest do
         |> join(:inner, [posts: p], c in assoc(p, :comments), as: :posts_comments)
         |> inspect()
 
-      built = User |> Join.build(grouping, sorts) |> inspect()
+      built = User |> join_build(grouping, sorts) |> inspect()
 
       assert original == built
     end
@@ -72,7 +79,7 @@ defmodule ExSieve.Builder.JoinTest do
       grouping = sample_grouping(name: [])
 
       original = from(u in User) |> (&Ecto.Adapters.SQL.to_sql(:all, ExSieve.Repo, &1)).()
-      built = User |> Join.build(grouping, []) |> (&Ecto.Adapters.SQL.to_sql(:all, ExSieve.Repo, &1)).()
+      built = User |> join_build(grouping, []) |> (&Ecto.Adapters.SQL.to_sql(:all, ExSieve.Repo, &1)).()
 
       assert original == built
     end
@@ -85,7 +92,7 @@ defmodule ExSieve.Builder.JoinTest do
         |> join(:inner, [u], p in assoc(u, :posts), as: :posts)
         |> inspect()
 
-      built = User |> Join.build(grouping, []) |> inspect()
+      built = User |> join_build(grouping, []) |> inspect()
 
       assert original == built
     end

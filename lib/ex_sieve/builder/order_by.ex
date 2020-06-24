@@ -4,12 +4,13 @@ defmodule ExSieve.Builder.OrderBy do
 
   alias ExSieve.Node.Sort
 
-  @spec build(Ecto.Queryable.t(), list(Sort.t())) :: Ecto.Query.t()
+  @spec build(Ecto.Queryable.t(), list(Sort.t())) :: {:ok, Ecto.Query.t()}
   def build(query, sorts) do
-    Enum.reduce(sorts, query, fn
-      %Sort{direction: direction, attribute: %{name: name, parent: parent}}, query ->
-        order_by(query, ^[{direction, dynamic_sort(parent, name)}])
-    end)
+    {:ok,
+     Enum.reduce(sorts, query, fn
+       %Sort{direction: direction, attribute: %{name: name, parent: parent}}, query ->
+         order_by(query, ^[{direction, dynamic_sort(parent, name)}])
+     end)}
   end
 
   defp dynamic_sort([], name), do: dynamic([p], field(p, ^name))
