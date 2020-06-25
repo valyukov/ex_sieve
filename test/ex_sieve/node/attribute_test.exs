@@ -5,28 +5,31 @@ defmodule ExSieve.Node.AttributeTest do
 
   describe "ExSieve.Node.Attribute.extract/2" do
     test "return Attribute with parent belongs_to" do
-      assert %Attribute{parent: [:post], name: :body} == Attribute.extract("post_body_eq", Comment)
+      assert %Attribute{parent: [:post], name: :body, type: :string} == Attribute.extract("post_body_eq", Comment)
     end
 
     test "return Attribute with has_many parent" do
-      assert %Attribute{parent: [:comments], name: :id} == Attribute.extract("comments_id_in", Post)
+      assert %Attribute{parent: [:comments], name: :id, type: :id} == Attribute.extract("comments_id_in", Post)
     end
 
     test "return Attribute without parent" do
-      assert %Attribute{name: :id, parent: []} == Attribute.extract("id_eq", Comment)
+      assert %Attribute{name: :id, parent: [], type: :id} == Attribute.extract("id_eq", Comment)
     end
 
     test "return Attributes for schema with similar fields names" do
-      assert %Attribute{name: :published, parent: []} == Attribute.extract("published_eq", Post)
-      assert %Attribute{name: :published_at, parent: []} == Attribute.extract("published_at_eq", Post)
+      assert %Attribute{name: :published, parent: [], type: :boolean} == Attribute.extract("published_eq", Post)
+
+      assert %Attribute{name: :published_at, parent: [], type: :naive_datetime} ==
+               Attribute.extract("published_at_eq", Post)
     end
 
     test "return Attribute with belongs_to parent" do
-      assert %Attribute{name: :name, parent: [:user]} == Attribute.extract("user_name_cont_all", Comment)
+      assert %Attribute{name: :name, parent: [:user], type: :string} == Attribute.extract("user_name_cont_all", Comment)
     end
 
     test "return Attribute with nested parents" do
-      assert %Attribute{name: :body, parent: [:posts, :comments]} == Attribute.extract("posts_comments_body_cont", User)
+      assert %Attribute{name: :body, parent: [:posts, :comments], type: :string} ==
+               Attribute.extract("posts_comments_body_cont", User)
     end
 
     test "return {:error, :attribute_not_found}" do

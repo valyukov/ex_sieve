@@ -180,80 +180,22 @@ null
 not_null
 ```
 
-#### All predicates
+#### Composite predicates
 ```
-eq
-not_eq
-cont
-not_cont
-lt
-lteq
-gt
-gteq
-in
-not_in
-matches
-does_not_match
-start
-not_start
-end
-not_end
-true
-not_true
-false
-not_false
-present
-blank
-null
-not_null
 eq_any
-eq_all
-not_eq_any
 not_eq_all
-cont_any
 cont_all
-not_cont_any
+cont_any
 not_cont_all
-lt_any
-lt_all
-lteq_any
-lteq_all
-gt_any
-gt_all
-gteq_any
-gteq_all
-in_any
-in_all
-not_in_any
-not_in_all
-matches_any
+not_cont_any
 matches_all
-does_not_match_any
+matches_any
 does_not_match_all
+does_not_match_any
 start_any
-start_all
-not_start_any
 not_start_all
 end_any
-end_all
-not_end_any
 not_end_all
-true_any
-true_all
-not_true_any
-not_true_all
-false_any
-false_all
-not_false_any
-not_false_all
-present_any
-present_all
-blank_any
-blank_all
-null_any
-null_all
-not_null_any
-not_null_all
 ```
 
 #### Combinators
@@ -263,6 +205,16 @@ and
 ```
 
 You can read more about predicates on [ransack wiki page](https://github.com/activerecord-hackery/ransack/wiki/Basic-Searching).
+
+#### Note
+
+`LIKE` queries can suffer of [LIKE injection](https://github.blog/2015-11-03-like-injection/) attacks.
+
+For this reason all predicates which result in a `LIKE` query (`cont`, `not_cont`, `start`, `not_start`, `end`, `not_end`
+and their composite predicates) are properly escaped.
+
+Some exceptions are  `matches`, `does_not_match` and their composite predicates that allows `%`, `_` and `\` chars in the value.
+You should be very careful when allowing an external user to use these predicates.
 
 ## Contributing
 

@@ -6,17 +6,17 @@ defmodule ExSieve.Node.SortTest do
 
   describe "Sort.extract/2" do
     test "return list(Sort.t) for String.t value" do
-      sort = %Sort{direction: :asc, attribute: %Attribute{name: :body, parent: [:post]}}
+      sort = %Sort{direction: :asc, attribute: %Attribute{name: :body, parent: [:post], type: :string}}
       assert [sort] == Sort.extract("post_body asc", Comment)
     end
 
     test "return list(Sort.t) for list(String.t) value" do
-      sort = %Sort{direction: :asc, attribute: %Attribute{name: :body, parent: [:post]}}
+      sort = %Sort{direction: :asc, attribute: %Attribute{name: :body, parent: [:post], type: :string}}
       assert [sort] == Sort.extract(["post_body asc"], Comment)
     end
 
     test "correctly handle nested relations" do
-      sort = %Sort{direction: :asc, attribute: %Attribute{name: :body, parent: [:posts, :comments]}}
+      sort = %Sort{direction: :asc, attribute: %Attribute{name: :body, parent: [:posts, :comments], type: :string}}
       assert [sort] == Sort.extract(["posts_comments_body asc"], User)
     end
 
