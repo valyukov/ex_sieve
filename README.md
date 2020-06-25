@@ -206,6 +206,16 @@ and
 
 You can read more about predicates on [ransack wiki page](https://github.com/activerecord-hackery/ransack/wiki/Basic-Searching).
 
+#### Note
+
+`LIKE` queries can suffer of [LIKE injection](https://github.blog/2015-11-03-like-injection/) attacks.
+
+For this reason all predicates which result in a `LIKE` query (`cont`, `not_cont`, `start`, `not_start`, `end`, `not_end`
+and their composite predicates) are properly escaped.
+
+Some exceptions are  `matches`, `does_not_match` and their composite predicates that allows `%`, `_` and `\` chars in the value.
+You should be very careful when allowing an external user to use these predicates.
+
 ## Contributing
 
 First, you'll need to build the test database.

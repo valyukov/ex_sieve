@@ -145,12 +145,12 @@ defmodule ExSieve.Builder.WhereTest do
     end
 
     test ":cont" do
-      {base, ex_sieve} = ex_sieve_post_query(%{"body_cont" => "foo"}, false)
-      query = base |> where([p], ilike(field(p, :body), ^"%foo%")) |> inspect()
+      {base, ex_sieve} = ex_sieve_post_query(%{"body_cont" => "f%o_o"}, false)
+      query = base |> where([p], ilike(field(p, :body), ^"%f\\%o\\_o%")) |> inspect()
       assert query == ex_sieve
 
-      {base, ex_sieve} = ex_sieve_post_query(%{"body_cont" => "foo"}, true)
-      query = base |> where([posts: p], ilike(field(p, :body), ^"%foo%")) |> inspect()
+      {base, ex_sieve} = ex_sieve_post_query(%{"body_cont" => "f%o_o"}, true)
+      query = base |> where([posts: p], ilike(field(p, :body), ^"%f\\%o\\_o%")) |> inspect()
       assert query == ex_sieve
 
       {base, ex_sieve} = ex_sieve_post_query(%{"id_cont" => 1}, false)
@@ -161,12 +161,12 @@ defmodule ExSieve.Builder.WhereTest do
     end
 
     test ":not_cont" do
-      {base, ex_sieve} = ex_sieve_post_query(%{"body_not_cont" => "foo"}, false)
-      query = base |> where([p], not ilike(field(p, :body), ^"%foo%")) |> inspect()
+      {base, ex_sieve} = ex_sieve_post_query(%{"body_not_cont" => "f%o_o"}, false)
+      query = base |> where([p], not ilike(field(p, :body), ^"%f\\%o\\_o%")) |> inspect()
       assert query == ex_sieve
 
-      {base, ex_sieve} = ex_sieve_post_query(%{"body_not_cont" => "foo"}, true)
-      query = base |> where([posts: p], not ilike(field(p, :body), ^"%foo%")) |> inspect()
+      {base, ex_sieve} = ex_sieve_post_query(%{"body_not_cont" => "f%o_o"}, true)
+      query = base |> where([posts: p], not ilike(field(p, :body), ^"%f\\%o\\_o%")) |> inspect()
       assert query == ex_sieve
 
       {base, ex_sieve} = ex_sieve_post_query(%{"id_not_cont" => 1}, false)
@@ -269,12 +269,12 @@ defmodule ExSieve.Builder.WhereTest do
     end
 
     test ":start" do
-      {base, ex_sieve} = ex_sieve_post_query(%{"title_start" => "foo"}, false)
-      query = base |> where([p], ilike(field(p, :title), ^"foo%")) |> inspect()
+      {base, ex_sieve} = ex_sieve_post_query(%{"title_start" => "f%o_o"}, false)
+      query = base |> where([p], ilike(field(p, :title), ^"f\\%o\\_o%")) |> inspect()
       assert query == ex_sieve
 
-      {base, ex_sieve} = ex_sieve_post_query(%{"title_start" => "foo"}, true)
-      query = base |> where([posts: p], ilike(field(p, :title), ^"foo%")) |> inspect()
+      {base, ex_sieve} = ex_sieve_post_query(%{"title_start" => "f%o_o"}, true)
+      query = base |> where([posts: p], ilike(field(p, :title), ^"f\\%o\\_o%")) |> inspect()
       assert query == ex_sieve
 
       {base, ex_sieve} = ex_sieve_post_query(%{"published_start" => true}, false)
@@ -285,12 +285,12 @@ defmodule ExSieve.Builder.WhereTest do
     end
 
     test ":not_start" do
-      {base, ex_sieve} = ex_sieve_post_query(%{"title_not_start" => "foo"}, false)
-      query = base |> where([p], not ilike(field(p, :title), ^"foo%")) |> inspect()
+      {base, ex_sieve} = ex_sieve_post_query(%{"title_not_start" => "f%o_o"}, false)
+      query = base |> where([p], not ilike(field(p, :title), ^"f\\%o\\_o%")) |> inspect()
       assert query == ex_sieve
 
-      {base, ex_sieve} = ex_sieve_post_query(%{"title_not_start" => "foo"}, true)
-      query = base |> where([posts: p], not ilike(field(p, :title), ^"foo%")) |> inspect()
+      {base, ex_sieve} = ex_sieve_post_query(%{"title_not_start" => "f%o_o"}, true)
+      query = base |> where([posts: p], not ilike(field(p, :title), ^"f\\%o\\_o%")) |> inspect()
       assert query == ex_sieve
 
       {base, ex_sieve} = ex_sieve_post_query(%{"published_not_start" => true}, false)
@@ -301,12 +301,12 @@ defmodule ExSieve.Builder.WhereTest do
     end
 
     test ":end" do
-      {base, ex_sieve} = ex_sieve_post_query(%{"title_end" => "foo"}, false)
-      query = base |> where([p], ilike(field(p, :title), ^"%foo")) |> inspect()
+      {base, ex_sieve} = ex_sieve_post_query(%{"title_end" => "f%o_o"}, false)
+      query = base |> where([p], ilike(field(p, :title), ^"%f\\%o\\_o")) |> inspect()
       assert query == ex_sieve
 
-      {base, ex_sieve} = ex_sieve_post_query(%{"title_end" => "foo"}, true)
-      query = base |> where([posts: p], ilike(field(p, :title), ^"%foo")) |> inspect()
+      {base, ex_sieve} = ex_sieve_post_query(%{"title_end" => "f%o_o"}, true)
+      query = base |> where([posts: p], ilike(field(p, :title), ^"%f\\%o\\_o")) |> inspect()
       assert query == ex_sieve
 
       {base, ex_sieve} = ex_sieve_post_query(%{"published_end" => true}, false)
@@ -317,12 +317,12 @@ defmodule ExSieve.Builder.WhereTest do
     end
 
     test ":not_end" do
-      {base, ex_sieve} = ex_sieve_post_query(%{"title_not_end" => "foo"}, false)
-      query = base |> where([p], not ilike(field(p, :title), ^"%foo")) |> inspect()
+      {base, ex_sieve} = ex_sieve_post_query(%{"title_not_end" => "f%o_o"}, false)
+      query = base |> where([p], not ilike(field(p, :title), ^"%f\\%o\\_o")) |> inspect()
       assert query == ex_sieve
 
-      {base, ex_sieve} = ex_sieve_post_query(%{"title_not_end" => "foo"}, true)
-      query = base |> where([posts: p], not ilike(field(p, :title), ^"%foo")) |> inspect()
+      {base, ex_sieve} = ex_sieve_post_query(%{"title_not_end" => "f%o_o"}, true)
+      query = base |> where([posts: p], not ilike(field(p, :title), ^"%f\\%o\\_o")) |> inspect()
       assert query == ex_sieve
 
       {base, ex_sieve} = ex_sieve_post_query(%{"published_not_end" => true}, false)

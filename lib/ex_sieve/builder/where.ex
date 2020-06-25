@@ -148,19 +148,19 @@ defmodule ExSieve.Builder.Where do
   end
 
   defp build_dynamic(:cont, %Attribute{parent: [], name: name}, [value | _]) do
-    dynamic([p], ilike(field(p, ^name), ^"%#{value}%"))
+    dynamic([p], ilike(field(p, ^name), ^"%#{escape_like_value(value)}%"))
   end
 
   defp build_dynamic(:cont, %Attribute{parent: parent, name: name}, [value | _]) do
-    dynamic([{^parent_name(parent), p}], ilike(field(p, ^name), ^"%#{value}%"))
+    dynamic([{^parent_name(parent), p}], ilike(field(p, ^name), ^"%#{escape_like_value(value)}%"))
   end
 
   defp build_dynamic(:not_cont, %Attribute{parent: [], name: name}, [value | _]) do
-    dynamic([p], not ilike(field(p, ^name), ^"%#{value}%"))
+    dynamic([p], not ilike(field(p, ^name), ^"%#{escape_like_value(value)}%"))
   end
 
   defp build_dynamic(:not_cont, %Attribute{parent: parent, name: name}, [value | _]) do
-    dynamic([{^parent_name(parent), p}], not ilike(field(p, ^name), ^"%#{value}%"))
+    dynamic([{^parent_name(parent), p}], not ilike(field(p, ^name), ^"%#{escape_like_value(value)}%"))
   end
 
   defp build_dynamic(:lt, %Attribute{parent: [], name: name}, [value | _]) do
@@ -228,35 +228,35 @@ defmodule ExSieve.Builder.Where do
   end
 
   defp build_dynamic(:start, %Attribute{parent: [], name: name}, [value | _]) do
-    dynamic([p], ilike(field(p, ^name), ^"#{value}%"))
+    dynamic([p], ilike(field(p, ^name), ^"#{escape_like_value(value)}%"))
   end
 
   defp build_dynamic(:start, %Attribute{parent: parent, name: name}, [value | _]) do
-    dynamic([{^parent_name(parent), p}], ilike(field(p, ^name), ^"#{value}%"))
+    dynamic([{^parent_name(parent), p}], ilike(field(p, ^name), ^"#{escape_like_value(value)}%"))
   end
 
   defp build_dynamic(:not_start, %Attribute{parent: [], name: name}, [value | _]) do
-    dynamic([p], not ilike(field(p, ^name), ^"#{value}%"))
+    dynamic([p], not ilike(field(p, ^name), ^"#{escape_like_value(value)}%"))
   end
 
   defp build_dynamic(:not_start, %Attribute{parent: parent, name: name}, [value | _]) do
-    dynamic([{^parent_name(parent), p}], not ilike(field(p, ^name), ^"#{value}%"))
+    dynamic([{^parent_name(parent), p}], not ilike(field(p, ^name), ^"#{escape_like_value(value)}%"))
   end
 
   defp build_dynamic(:end, %Attribute{parent: [], name: name}, [value | _]) do
-    dynamic([p], ilike(field(p, ^name), ^"%#{value}"))
+    dynamic([p], ilike(field(p, ^name), ^"%#{escape_like_value(value)}"))
   end
 
   defp build_dynamic(:end, %Attribute{parent: parent, name: name}, [value | _]) do
-    dynamic([{^parent_name(parent), p}], ilike(field(p, ^name), ^"%#{value}"))
+    dynamic([{^parent_name(parent), p}], ilike(field(p, ^name), ^"%#{escape_like_value(value)}"))
   end
 
   defp build_dynamic(:not_end, %Attribute{parent: [], name: name}, [value | _]) do
-    dynamic([p], not ilike(field(p, ^name), ^"%#{value}"))
+    dynamic([p], not ilike(field(p, ^name), ^"%#{escape_like_value(value)}"))
   end
 
   defp build_dynamic(:not_end, %Attribute{parent: parent, name: name}, [value | _]) do
-    dynamic([{^parent_name(parent), p}], not ilike(field(p, ^name), ^"%#{value}"))
+    dynamic([{^parent_name(parent), p}], not ilike(field(p, ^name), ^"%#{escape_like_value(value)}"))
   end
 
   defp build_dynamic(true, attribute, _value), do: build_dynamic(:eq, attribute, [true])
@@ -300,4 +300,6 @@ defmodule ExSieve.Builder.Where do
   end
 
   defp build_dynamic(_predicate, _attribute, _values), do: {:error, :predicate_not_found}
+
+  defp escape_like_value(value), do: Regex.replace(~r/([\%_])/, value, ~S(\\\1))
 end
