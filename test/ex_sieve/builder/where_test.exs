@@ -17,15 +17,23 @@ defmodule ExSieve.Builder.WhereTest do
   defp ex_sieve_post_query(params, nested, ignore_errors \\ true, inspect? \\ true)
 
   defp ex_sieve_post_query(params, _nested = false, ignore_errors, inspect?) do
-    grouping = Grouping.extract(params, Post, %Config{ignore_errors: true})
-    {Post, where_build(Post, grouping, %Config{ignore_errors: ignore_errors}, inspect?)}
+    case Grouping.extract(params, Post, %Config{ignore_errors: ignore_errors}) do
+      {:error, _} = err -> {nil, err}
+      grouping -> {Post, where_build(Post, grouping, %Config{ignore_errors: ignore_errors}, inspect?)}
+    end
   end
 
   defp ex_sieve_post_query(params, _nested = true, ignore_errors, inspect?) do
     params = Map.new(params, fn {key, value} -> {"posts_#{key}", value} end)
-    grouping = Grouping.extract(params, User, %Config{ignore_errors: true})
-    base = from(u in User, join: p in assoc(u, :posts), as: :posts)
-    {base, where_build(base, grouping, %Config{ignore_errors: ignore_errors}, inspect?)}
+
+    case Grouping.extract(params, User, %Config{ignore_errors: ignore_errors}) do
+      {:error, _} = err ->
+        {nil, err}
+
+      grouping ->
+        base = from(u in User, join: p in assoc(u, :posts), as: :posts)
+        {base, where_build(base, grouping, %Config{ignore_errors: ignore_errors}, inspect?)}
+    end
   end
 
   describe "ExSieve.Builder.Where.build/3" do
@@ -95,6 +103,24 @@ defmodule ExSieve.Builder.WhereTest do
 
       assert ecto == where_build(base, grouping)
     end
+
+    test "discard params with invalid type" do
+      params = %{"published_start" => "foo", "title_cont" => "bar"}
+      grouping = Grouping.extract(params, Post, %Config{ignore_errors: true})
+
+      ecto = Post |> where([p], true and ilike(field(p, :title), ^"%bar%")) |> inspect()
+
+      assert ecto == where_build(Post, grouping)
+    end
+
+    test "discard params with invalid value" do
+      params = %{"published_true" => "foo", "title_cont" => "bar"}
+      grouping = Grouping.extract(params, Post, %Config{ignore_errors: true})
+
+      ecto = Post |> where([p], true and ilike(field(p, :title), ^"%bar%")) |> inspect()
+
+      assert ecto == where_build(Post, grouping)
+    end
   end
 
   describe "basic predicates" do
@@ -147,7 +173,7 @@ defmodule ExSieve.Builder.WhereTest do
       assert inspect(base) == ex_sieve
 
       {_base, ex_sieve} = ex_sieve_post_query(%{"id_not_cont" => 1}, false, false, false)
-      assert {:error, _} = ex_sieve
+      assert {:error, {:invalid_type, _}} = ex_sieve
     end
 
     test ":lt" do
@@ -223,7 +249,7 @@ defmodule ExSieve.Builder.WhereTest do
       assert inspect(base) == ex_sieve
 
       {_base, ex_sieve} = ex_sieve_post_query(%{"published_matches" => true}, false, false, false)
-      assert {:error, _} = ex_sieve
+      assert {:error, {:invalid_type, _}} = ex_sieve
     end
 
     test ":does_not_match" do
@@ -239,7 +265,7 @@ defmodule ExSieve.Builder.WhereTest do
       assert inspect(base) == ex_sieve
 
       {_base, ex_sieve} = ex_sieve_post_query(%{"published_at_does_not_match" => true}, false, false, false)
-      assert {:error, _} = ex_sieve
+      assert {:error, {:invalid_type, _}} = ex_sieve
     end
 
     test ":start" do
@@ -255,7 +281,7 @@ defmodule ExSieve.Builder.WhereTest do
       assert inspect(base) == ex_sieve
 
       {_base, ex_sieve} = ex_sieve_post_query(%{"published_start" => true}, false, false, false)
-      assert {:error, _} = ex_sieve
+      assert {:error, {:invalid_type, _}} = ex_sieve
     end
 
     test ":not_start" do
@@ -271,7 +297,7 @@ defmodule ExSieve.Builder.WhereTest do
       assert inspect(base) == ex_sieve
 
       {_base, ex_sieve} = ex_sieve_post_query(%{"published_not_start" => true}, false, false, false)
-      assert {:error, _} = ex_sieve
+      assert {:error, {:invalid_type, _}} = ex_sieve
     end
 
     test ":end" do
@@ -287,7 +313,7 @@ defmodule ExSieve.Builder.WhereTest do
       assert inspect(base) == ex_sieve
 
       {_base, ex_sieve} = ex_sieve_post_query(%{"published_end" => true}, false, false, false)
-      assert {:error, _} = ex_sieve
+      assert {:error, {:invalid_type, _}} = ex_sieve
     end
 
     test ":not_end" do
@@ -303,7 +329,7 @@ defmodule ExSieve.Builder.WhereTest do
       assert inspect(base) == ex_sieve
 
       {_base, ex_sieve} = ex_sieve_post_query(%{"published_not_end" => true}, false, false, false)
-      assert {:error, _} = ex_sieve
+      assert {:error, {:invalid_type, _}} = ex_sieve
     end
 
     test ":true" do
@@ -319,7 +345,10 @@ defmodule ExSieve.Builder.WhereTest do
       assert inspect(base) == ex_sieve
 
       {_base, ex_sieve} = ex_sieve_post_query(%{"title_true" => true}, false, false, false)
-      assert {:error, _} = ex_sieve
+      assert {:error, {:invalid_type, _}} = ex_sieve
+
+      {_base, ex_sieve} = ex_sieve_post_query(%{"published_true" => "foo"}, false, false, false)
+      assert {:error, {:invalid_value, _}} = ex_sieve
     end
 
     test ":not_true" do
@@ -335,7 +364,10 @@ defmodule ExSieve.Builder.WhereTest do
       assert inspect(base) == ex_sieve
 
       {_base, ex_sieve} = ex_sieve_post_query(%{"title_not_true" => true}, false, false, false)
-      assert {:error, _} = ex_sieve
+      assert {:error, {:invalid_type, _}} = ex_sieve
+
+      {_base, ex_sieve} = ex_sieve_post_query(%{"published_not_true" => "foo"}, false, false, false)
+      assert {:error, {:invalid_value, _}} = ex_sieve
     end
 
     test ":false" do
@@ -351,7 +383,10 @@ defmodule ExSieve.Builder.WhereTest do
       assert inspect(base) == ex_sieve
 
       {_base, ex_sieve} = ex_sieve_post_query(%{"title_false" => true}, false, false, false)
-      assert {:error, _} = ex_sieve
+      assert {:error, {:invalid_type, _}} = ex_sieve
+
+      {_base, ex_sieve} = ex_sieve_post_query(%{"published_false" => "foo"}, false, false, false)
+      assert {:error, {:invalid_value, _}} = ex_sieve
     end
 
     test ":not_false" do
@@ -367,7 +402,10 @@ defmodule ExSieve.Builder.WhereTest do
       assert inspect(base) == ex_sieve
 
       {_base, ex_sieve} = ex_sieve_post_query(%{"title_not_false" => true}, false, false, false)
-      assert {:error, _} = ex_sieve
+      assert {:error, {:invalid_type, _}} = ex_sieve
+
+      {_base, ex_sieve} = ex_sieve_post_query(%{"published_not_false" => "foo"}, false, false, false)
+      assert {:error, {:invalid_value, _}} = ex_sieve
     end
 
     test ":blank" do
@@ -383,7 +421,10 @@ defmodule ExSieve.Builder.WhereTest do
       assert inspect(base) == ex_sieve
 
       {_base, ex_sieve} = ex_sieve_post_query(%{"published_blank" => true}, false, false, false)
-      assert {:error, _} = ex_sieve
+      assert {:error, {:invalid_type, _}} = ex_sieve
+
+      {_base, ex_sieve} = ex_sieve_post_query(%{"title_blank" => "foo"}, false, false, false)
+      assert {:error, {:invalid_value, _}} = ex_sieve
     end
 
     test ":present" do
@@ -399,7 +440,10 @@ defmodule ExSieve.Builder.WhereTest do
       assert inspect(base) == ex_sieve
 
       {_base, ex_sieve} = ex_sieve_post_query(%{"published_present" => true}, false, false, false)
-      assert {:error, _} = ex_sieve
+      assert {:error, {:invalid_type, _}} = ex_sieve
+
+      {_base, ex_sieve} = ex_sieve_post_query(%{"title_present" => "foo"}, false, false, false)
+      assert {:error, {:invalid_value, _}} = ex_sieve
     end
 
     test ":null" do
@@ -410,6 +454,9 @@ defmodule ExSieve.Builder.WhereTest do
       {base, ex_sieve} = ex_sieve_post_query(%{"title_null" => true}, true)
       query = base |> where([posts: p], is_nil(field(p, :title))) |> inspect()
       assert query == ex_sieve
+
+      {_base, ex_sieve} = ex_sieve_post_query(%{"title_null" => "foo"}, false, false, false)
+      assert {:error, {:invalid_value, _}} = ex_sieve
     end
 
     test ":not_null" do
@@ -420,6 +467,9 @@ defmodule ExSieve.Builder.WhereTest do
       {base, ex_sieve} = ex_sieve_post_query(%{"title_not_null" => true}, true)
       query = base |> where([posts: p], not is_nil(field(p, :title))) |> inspect()
       assert query == ex_sieve
+
+      {_base, ex_sieve} = ex_sieve_post_query(%{"title_not_null" => "foo"}, false, false, false)
+      assert {:error, {:invalid_value, _}} = ex_sieve
     end
   end
 
@@ -438,7 +488,12 @@ defmodule ExSieve.Builder.WhereTest do
 
     test "invalid_type" do
       {_, ex_sieve} = ex_sieve_post_query(%{"id_cont_any" => [1, 2]}, false, false, false)
-      assert {:error, _} = ex_sieve
+      assert {:error, {:invalid_type, _}} = ex_sieve
+    end
+
+    test "invalid predicate" do
+      {_, ex_sieve} = ex_sieve_post_query(%{"id_lt_all" => [1, 2]}, false, false, false)
+      assert {:error, :predicate_not_found} = ex_sieve
     end
   end
 end

@@ -24,13 +24,13 @@ defmodule ExSieve.Node.Grouping do
   defp valid_combinator(combinator) when combinator in @combinators, do: String.to_atom(combinator)
   defp valid_combinator(_combinator), do: :and
 
-  defp result({:error, reason}, _groupings), do: {:error, reason}
-  defp result(_grouping, {:error, reason}), do: {:error, reason}
+  defp result({:error, _} = err, _groupings), do: err
+  defp result(_grouping, {:error, _} = err), do: err
   defp result(grouping, groupings), do: %Grouping{grouping | groupings: groupings}
 
   defp do_extract(conditions, schema, config, combinator) do
     case extract_conditions(conditions, schema, config) do
-      {:error, reason} -> {:error, reason}
+      {:error, _} = err -> err
       conditions -> %Grouping{combinator: combinator, conditions: conditions}
     end
   end

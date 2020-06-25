@@ -7,32 +7,40 @@ defmodule ExSieve.Builder.Where do
 
   @true_values [1, true, "1", "T", "t", "true", "TRUE"]
 
-  @basic_predicates ~w(eq
-                       not_eq
-                       cont
-                       not_cont
-                       lt
-                       lteq
-                       gt
-                       gteq
-                       in
-                       not_in
-                       matches
-                       does_not_match
-                       start
-                       not_start
-                       end
-                       not_end
-                       true
-                       not_true
-                       false
-                       not_false
-                       present
-                       blank
-                       null
-                       not_null)a
+  # {basic_predicate, allowed_types | :all, allowed_values | :all, all_any_combinators}
+  @predicates_opts [
+    {:eq, :all, :all, [:any]},
+    {:not_eq, :all, :all, [:all]},
+    {:cont, [:string], :all, [:all, :any]},
+    {:not_cont, [:string], :all, [:all, :any]},
+    {:lt, :all, :all, []},
+    {:lteq, :all, :all, []},
+    {:gt, :all, :all, []},
+    {:gteq, :all, :all, []},
+    {:in, :all, :all, []},
+    {:not_in, :all, :all, []},
+    {:matches, [:string], :all, [:all, :any]},
+    {:does_not_match, [:string], :all, [:all, :any]},
+    {:start, [:string], :all, [:any]},
+    {:not_start, [:string], :all, [:all]},
+    {:end, [:string], :all, [:any]},
+    {:not_end, [:string], :all, [:all]},
+    {true, [:boolean], @true_values, []},
+    {:not_true, [:boolean], @true_values, []},
+    {false, [:boolean], @true_values, []},
+    {:not_false, [:boolean], @true_values, []},
+    {:present, [:string], @true_values, []},
+    {:blank, [:string], @true_values, []},
+    {:null, :all, @true_values, []},
+    {:not_null, :all, @true_values, []}
+  ]
 
-  @all_any_predicates Enum.flat_map(@basic_predicates, &[:"#{&1}_any", :"#{&1}_all"])
+  @basic_predicates Enum.map(@predicates_opts, &elem(&1, 0))
+
+  @all_any_predicates Enum.flat_map(@predicates_opts, fn {predicate, _, _, all_any} ->
+                        Enum.map(all_any, &:"#{predicate}_#{&1}")
+                      end)
+
   @predicates @basic_predicates ++ @all_any_predicates
   @predicates_str Enum.map(@predicates, &Atom.to_string/1)
 
@@ -82,9 +90,11 @@ defmodule ExSieve.Builder.Where do
 
   defp parent_name(parents), do: parents |> Enum.join("_") |> String.to_atom()
 
-  for basic_predicate <- @basic_predicates do
-    for {name, combinator} <- [all: :and, any: :or] do
-      predicate = :"#{basic_predicate}_#{name}"
+  # composite predicates
+  for {basic_predicate, _, _, all_any} <- @predicates_opts do
+    for extension <- all_any do
+      predicate = :"#{basic_predicate}_#{extension}"
+      combinator = Keyword.get([all: :and, any: :or], extension)
 
       defp dynamic_predicate(unquote(predicate), attribute, values, config) do
         values
@@ -94,6 +104,7 @@ defmodule ExSieve.Builder.Where do
     end
   end
 
+  # base predicates
   defp dynamic_predicate(predicate, attribute, values, _config) do
     case validate_dynamic(predicate, attribute, values) do
       :ok -> build_dynamic(predicate, attribute, values)
@@ -101,30 +112,24 @@ defmodule ExSieve.Builder.Where do
     end
   end
 
-  defp validate_dynamic(predicate, %Attribute{type: type} = attr, _)
-       when (predicate in [
-               :cont,
-               :not_cont,
-               :matches,
-               :does_not_match,
-               :start,
-               :not_start,
-               :end,
-               :not_end,
-               :blank,
-               :present
-             ] and type not in [:string]) or
-              (predicate in [true, :not_true, false, :not_false] and type not in [:boolean]) do
-    {:error, {:invalid_type, attr}}
-  end
+  for {predicate, allowed_types, allowed_values, _} <- @predicates_opts do
+    unless allowed_types == :all do
+      defp validate_dynamic(unquote(predicate), %Attribute{type: type} = attr, _)
+           when type not in unquote(allowed_types) do
+        {:error, {:invalid_type, attr}}
+      end
+    end
 
-  defp validate_dynamic(predicate, attr, [value | _])
-       when predicate in [true, :not_true, false, :not_false, :blank, :null, :not_null, :present] and
-              value not in @true_values do
-    {:error, {:invalid_value, attr}}
+    unless allowed_values == :all do
+      defp validate_dynamic(unquote(predicate), attr, [value | _]) when value not in unquote(allowed_values) do
+        {:error, {:invalid_value, attr}}
+      end
+    end
   end
 
   defp validate_dynamic(predicate, _attribute, _values) when predicate in @predicates, do: :ok
+
+  defp validate_dynamic(_predicate, _attribute, _values), do: {:error, :predicate_not_found}
 
   defp build_dynamic(:eq, %Attribute{parent: [], name: name}, [value | _]) do
     dynamic([p], field(p, ^name) == ^value)
