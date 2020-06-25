@@ -95,16 +95,9 @@ defmodule ExSieve.Builder.WhereTest do
 
       assert ecto == where_build(base, grouping)
     end
+  end
 
-    test "discard params with invalid type" do
-      params = %{"published_start" => "foo", "title_cont" => "bar"}
-      grouping = Grouping.extract(params, Post, %Config{ignore_errors: true})
-
-      ecto = Post |> where([p], true and ilike(field(p, :title), ^"%bar%")) |> inspect()
-
-      assert ecto == where_build(Post, grouping)
-    end
-
+  describe "basic predicates" do
     test ":eq" do
       {base, ex_sieve} = ex_sieve_post_query(%{"id_eq" => 1}, false)
       query = base |> where([p], field(p, :id) == ^1) |> inspect()
@@ -427,6 +420,25 @@ defmodule ExSieve.Builder.WhereTest do
       {base, ex_sieve} = ex_sieve_post_query(%{"title_not_null" => true}, true)
       query = base |> where([posts: p], not is_nil(field(p, :title))) |> inspect()
       assert query == ex_sieve
+    end
+  end
+
+  describe "all/any predicates" do
+    test "cont_all" do
+      {base, ex_sieve} = ex_sieve_post_query(%{"title_cont_all" => ["foo", "bar"]}, false)
+      query = base |> where([p], ilike(field(p, :title), ^"%foo%") and ilike(field(p, :title), ^"%bar%")) |> inspect()
+      assert query == ex_sieve
+    end
+
+    test "cont_any" do
+      {base, ex_sieve} = ex_sieve_post_query(%{"title_cont_any" => ["foo", "bar"]}, false)
+      query = base |> where([p], ilike(field(p, :title), ^"%foo%") or ilike(field(p, :title), ^"%bar%")) |> inspect()
+      assert query == ex_sieve
+    end
+
+    test "invalid_type" do
+      {_, ex_sieve} = ex_sieve_post_query(%{"id_cont_any" => [1, 2]}, false, false, false)
+      assert {:error, _} = ex_sieve
     end
   end
 end

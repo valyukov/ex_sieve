@@ -1,45 +1,12 @@
 defmodule ExSieve.Node.Condition do
   @moduledoc false
 
+  alias ExSieve.Builder.Where
   alias ExSieve.Node.{Attribute, Condition}
 
   defstruct values: nil, attributes: nil, predicate: nil, combinator: nil
 
   @type t :: %__MODULE__{}
-
-  @basic_predicates ~w(eq
-                       not_eq
-                       cont
-                       not_cont
-                       lt
-                       lteq
-                       gt
-                       gteq
-                       in
-                       not_in
-                       matches
-                       does_not_match
-                       start
-                       not_start
-                       end
-                       not_end
-                       true
-                       not_true
-                       false
-                       not_false
-                       present
-                       blank
-                       null
-                       not_null)
-
-  @all_any_predicates Enum.flat_map(@basic_predicates, &["#{&1}_any", "#{&1}_all"])
-  @predicates @basic_predicates ++ @all_any_predicates
-
-  @spec predicates :: list(String.t())
-  def predicates, do: @predicates
-
-  @spec basic_predicates :: list(String.t())
-  def basic_predicates, do: @basic_predicates
 
   @typep values :: String.t() | integer | list(String.t() | integer)
 
@@ -70,7 +37,7 @@ defmodule ExSieve.Node.Condition do
   end
 
   defp get_predicate(key) do
-    @predicates
+    Where.predicates()
     |> Enum.sort_by(&byte_size/1, &>=/2)
     |> Enum.find(&String.ends_with?(key, &1))
     |> case do
