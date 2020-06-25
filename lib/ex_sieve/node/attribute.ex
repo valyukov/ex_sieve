@@ -8,25 +8,30 @@ defmodule ExSieve.Node.Attribute do
 
   @type t :: %__MODULE__{}
 
-  @spec extract(key :: String.t(), module | %{related: module}, Config.t()) :: t() | {:error, :attribute_not_found}
-  def extract(key, module, _config) do
-    extract(key, module, {:name, get_name_and_type(module, key)}, [])
+  @spec extract(key :: String.t(), module | %{related: module}, Config.t()) ::
+          t() | {:error, :attribute_not_found | :too_deep}
+  def extract(key, module, config) do
+    extract(key, module, {:name, get_name_and_type(module, key)}, [], config)
   end
 
-  defp extract(key, module, {:name, nil}, parents) do
-    extract(key, module, {:assoc, get_assoc(module, key)}, parents)
+  defp extract(key, module, {:name, nil}, parents, %Config{max_depth: md} = config) do
+    if md == :full or (is_integer(md) and length(parents) < md) do
+      extract(key, module, {:assoc, get_assoc(module, key)}, parents, config)
+    else
+      {:error, :too_deep}
+    end
   end
 
-  defp extract(_, _, {:name, {name, type}}, parents) do
+  defp extract(_, _, {:name, {name, type}}, parents, _config) do
     %Attribute{parent: Enum.reverse(parents), name: name, type: type}
   end
 
-  defp extract(_, _, {:assoc, nil}, _), do: {:error, :attribute_not_found}
+  defp extract(_, _, {:assoc, nil}, _, _), do: {:error, :attribute_not_found}
 
-  defp extract(key, module, {:assoc, assoc}, parents) do
+  defp extract(key, module, {:assoc, assoc}, parents, config) do
     key = String.replace_prefix(key, "#{assoc}_", "")
     module = get_assoc_module(module, assoc)
-    extract(key, module, {:name, get_name_and_type(module, key)}, [assoc | parents])
+    extract(key, module, {:name, get_name_and_type(module, key)}, [assoc | parents], config)
   end
 
   defp get_assoc_module(module, assoc) do

@@ -43,5 +43,12 @@ defmodule ExSieve.Node.AttributeTest do
     test "return {:error, :attribute_not_found} when parent attribute doesn't exist" do
       assert {:error, :attribute_not_found} == Attribute.extract("post_tid", Comment, %Config{})
     end
+
+    test "return {:error, :too_deep} when max_depth is exceeded" do
+      assert {:error, :too_deep} == Attribute.extract("posts_comments_body_cont", User, %Config{max_depth: 0})
+      assert {:error, :too_deep} == Attribute.extract("posts_comments_body_cont", User, %Config{max_depth: 1})
+      assert %Attribute{} = Attribute.extract("posts_comments_body_cont", User, %Config{max_depth: 2})
+      assert %Attribute{} = Attribute.extract("posts_comments_body_cont", User, %Config{max_depth: :full})
+    end
   end
 end
