@@ -3,12 +3,13 @@ defmodule ExSieve.Node.Attribute do
 
   defstruct name: nil, parent: nil, type: nil
 
+  alias ExSieve.Config
   alias ExSieve.Node.Attribute
 
   @type t :: %__MODULE__{}
 
-  @spec extract(key :: String.t(), module | %{related: module}) :: t() | {:error, :attribute_not_found}
-  def extract(key, module) do
+  @spec extract(key :: String.t(), module | %{related: module}, Config.t()) :: t() | {:error, :attribute_not_found}
+  def extract(key, module, _config) do
     extract(key, module, {:name, get_name_and_type(module, key)}, [])
   end
 

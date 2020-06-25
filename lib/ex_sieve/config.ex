@@ -3,13 +3,17 @@ defmodule ExSieve.Config do
   A `ExSieve.Config` can be created with a `ignore_errors` true or false
   ```
   %ExSieve.Config{
-    ignore_errors: true
+    ignore_errors: true,
+    max_depth: :full
   }
   ```
   """
-  defstruct ignore_errors: true
+  defstruct ignore_errors: true, max_depth: :full
 
-  @type t :: %__MODULE__{}
+  @type t :: %__MODULE__{
+          ignore_errors: boolean(),
+          max_depth: non_neg_integer() | :full
+        }
 
   @doc false
   @spec new(Keyword.t(), call_options :: map, schema :: module()) :: ExSieve.Config.t()

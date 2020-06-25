@@ -41,7 +41,7 @@ defmodule ExSieve.Node.Grouping do
 
   defp extract_conditions(conditions, schema, config) do
     conditions
-    |> Enum.map(fn {key, value} -> Condition.extract(key, value, schema) end)
+    |> Enum.map(fn {key, value} -> Condition.extract(key, value, schema, config) end)
     |> Utils.get_error(config)
   end
 end
