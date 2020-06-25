@@ -36,16 +36,24 @@ defmodule ExSieve.Builder.Where do
   ]
 
   @basic_predicates Enum.map(@predicates_opts, &elem(&1, 0))
+  @basic_predicates_str Enum.map(@basic_predicates, &Atom.to_string/1)
 
   @all_any_predicates Enum.flat_map(@predicates_opts, fn {predicate, _, _, all_any} ->
                         Enum.map(all_any, &:"#{predicate}_#{&1}")
                       end)
+  @all_any_predicates_str Enum.map(@all_any_predicates, &Atom.to_string/1)
 
   @predicates @basic_predicates ++ @all_any_predicates
-  @predicates_str Enum.map(@predicates, &Atom.to_string/1)
+  @predicates_str @basic_predicates_str ++ @all_any_predicates_str
 
   @spec predicates() :: [String.t()]
   def predicates, do: @predicates_str
+
+  @spec basic_predicates :: [String.t()]
+  def basic_predicates, do: @basic_predicates_str
+
+  @spec composite_predicates :: [String.t()]
+  def composite_predicates, do: @all_any_predicates_str
 
   @spec build(Ecto.Queryable.t(), Grouping.t(), Config.t()) :: {:ok, Ecto.Query.t()} | {:error, any()}
   def build(query, %Grouping{combinator: combinator} = grouping, config) when combinator in ~w(and or)a do

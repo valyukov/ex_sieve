@@ -4,15 +4,20 @@ defmodule ExSieve.Config do
   ```
   %ExSieve.Config{
     ignore_errors: true,
-    max_depth: :full
+    max_depth: :full,
+    except_predicates: nil,
+    only_predicates: nil
   }
   ```
   """
-  defstruct ignore_errors: true, max_depth: :full
+
+  defstruct ignore_errors: true, max_depth: :full, except_predicates: nil, only_predicates: nil
 
   @type t :: %__MODULE__{
           ignore_errors: boolean(),
-          max_depth: non_neg_integer() | :full
+          max_depth: non_neg_integer() | :full,
+          except_predicates: [String.t() | :baisc | :composite] | nil,
+          only_predicates: [String.t() | :baisc | :composite] | nil
         }
 
   @doc false

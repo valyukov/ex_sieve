@@ -45,8 +45,46 @@ defmodule ExSieve.Node.ConditionTest do
       assert length(condition.attributes) == 1
     end
 
+    test "return Condition for predicate in only" do
+      config = %Config{ignore_errors: false, only_predicates: ["eq"]}
+      assert %Condition{} = Condition.extract("post_id_eq", 1, Comment, config)
+
+      config = %Config{ignore_errors: false, only_predicates: [:basic]}
+      assert %Condition{} = Condition.extract("post_id_eq", 1, Comment, config)
+
+      config = %Config{ignore_errors: false, only_predicates: [:composite, "eq"]}
+      assert %Condition{} = Condition.extract("post_id_eq", 1, Comment, config)
+    end
+
+    test "return Condition for predicate not in except" do
+      config = %Config{ignore_errors: false, except_predicates: ["cont"]}
+      assert %Condition{} = Condition.extract("body_not_cont", ["foo"], Comment, config)
+
+      config = %Config{ignore_errors: false, except_predicates: [:basic]}
+      assert %Condition{} = Condition.extract("body_not_cont_all", ["foo", "bar"], Comment, config)
+
+      config = %Config{ignore_errors: false, except_predicates: [:basic, "cont_all"]}
+      assert %Condition{} = Condition.extract("body_not_cont_all", ["foo", "bar"], Comment, config)
+    end
+
     test "return {:error, :predicate_not_found}" do
       assert {:error, :predicate_not_found} == Condition.extract("post_id_and_id", 1, Comment, %Config{})
+    end
+
+    test "return {:error, :predicate_not_found} for excluded predicate" do
+      config = %Config{ignore_errors: false, except_predicates: ["eq"]}
+      assert {:error, :predicate_not_found} == Condition.extract("post_id_eq", 1, Comment, config)
+
+      config = %Config{ignore_errors: false, except_predicates: [:composite]}
+      assert {:error, :predicate_not_found} == Condition.extract("body_not_cont_all", ["foo", "bar"], Comment, config)
+    end
+
+    test "return {:error, :predicate_not_found} for predicate not in only" do
+      config = %Config{ignore_errors: false, only_predicates: ["eq"]}
+      assert {:error, :predicate_not_found} == Condition.extract("post_id_in", 1, Comment, config)
+
+      config = %Config{ignore_errors: false, only_predicates: [:composite]}
+      assert {:error, :predicate_not_found} == Condition.extract("body_cont", "foo", Comment, config)
     end
 
     test "return {:error, :attribute_not_found}" do
