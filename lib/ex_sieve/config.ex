@@ -12,20 +12,31 @@ defmodule ExSieve.Config do
   @type t :: %__MODULE__{}
 
   @doc false
-  @spec new(Keyword.t(), map) :: ExSieve.Config.t()
-  def new(defaults, options \\ %{}) do
-    %ExSieve.Config{ignore_errors: ignore_errors?(defaults, options)}
+  @spec new(Keyword.t(), call_options :: map, schema :: module()) :: ExSieve.Config.t()
+  def new(defaults, call_options, schema) do
+    defaults = normalize_options(defaults)
+    call_options = normalize_options(call_options)
+    schema_options = schema |> options_from_schema() |> normalize_options()
+
+    opts =
+      defaults
+      |> Map.merge(schema_options)
+      |> Map.merge(call_options)
+
+    struct(ExSieve.Config, opts)
   end
 
-  defp normalize_options(options) do
-    Enum.reduce(options, %{}, fn {k, v}, map ->
-      Map.put(map, to_string(k), v)
+  defp options_from_schema(schema) do
+    cond do
+      function_exported?(schema, :ex_sieve_options, 0) -> apply(schema, :ex_sieve_options, [])
+      true -> %{}
+    end
+  end
+
+  defp normalize_options(options) when is_list(options) or is_map(options) do
+    Map.new(options, fn
+      {key, val} when is_atom(key) -> {key, val}
+      {key, val} when is_bitstring(key) -> {String.to_existing_atom(key), val}
     end)
-  end
-
-  defp ignore_errors?(defaults, options) do
-    options
-    |> normalize_options
-    |> Map.get("ignore_errors", Keyword.get(defaults, :ignore_errors, true))
   end
 end

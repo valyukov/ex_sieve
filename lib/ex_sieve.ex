@@ -31,7 +31,7 @@ defmodule ExSieve do
       @ex_sieve_defaults unquote(opts)
 
       def filter(queryable, params, options \\ %{}) do
-        ExSieve.Filter.filter(queryable, params, Config.new(@ex_sieve_defaults, options))
+        ExSieve.Filter.filter(queryable, params, @ex_sieve_defaults, options)
       end
     end
   end
