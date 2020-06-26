@@ -1,24 +1,21 @@
 defmodule ExSieve.Config do
-  @moduledoc """
-  A `ExSieve.Config` can be created with a `ignore_errors` true or false
-  ```
-  %ExSieve.Config{
-    ignore_errors: true,
-    max_depth: :full,
-    except_predicates: nil,
-    only_predicates: nil
-  }
-  ```
-  """
-
   defstruct ignore_errors: true, max_depth: :full, except_predicates: nil, only_predicates: nil
 
+  @typedoc """
+  `ExSieve` configuration options:
+    * `ignore_errors`
+    * `max_depth`
+    * `except_predicates`
+    * `only_predicates`
+  """
   @type t :: %__MODULE__{
           ignore_errors: boolean(),
           max_depth: non_neg_integer() | :full,
-          except_predicates: [String.t() | :baisc | :composite] | nil,
-          only_predicates: [String.t() | :baisc | :composite] | nil
+          except_predicates: [String.t() | :basic | :composite] | nil,
+          only_predicates: [String.t() | :basic | :composite] | nil
         }
+
+  @keys [:ignore_errors, :max_depth, :except_predicates, :only_predicates]
 
   @doc false
   @spec new(Keyword.t(), call_options :: map, schema :: module()) :: ExSieve.Config.t()
@@ -31,13 +28,14 @@ defmodule ExSieve.Config do
       defaults
       |> Map.merge(schema_options)
       |> Map.merge(call_options)
+      |> Map.take(@keys)
 
     struct(ExSieve.Config, opts)
   end
 
   defp options_from_schema(schema) do
     cond do
-      function_exported?(schema, :ex_sieve_options, 0) -> apply(schema, :ex_sieve_options, [])
+      function_exported?(schema, :__ex_sieve_options__, 0) -> apply(schema, :__ex_sieve_options__, [])
       true -> %{}
     end
   end

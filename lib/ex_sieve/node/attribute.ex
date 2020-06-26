@@ -3,7 +3,7 @@ defmodule ExSieve.Node.Attribute do
 
   defstruct name: nil, parent: nil, type: nil
 
-  alias ExSieve.Config
+  alias ExSieve.{Config, Utils}
   alias ExSieve.Node.Attribute
 
   @type t :: %__MODULE__{}
@@ -46,6 +46,7 @@ defmodule ExSieve.Node.Attribute do
   defp get_assoc(module, key) do
     :associations
     |> module.__schema__()
+    |> Utils.filter_list(nil, not_filterable_fields(module))
     |> find_field(key)
   end
 
@@ -54,6 +55,7 @@ defmodule ExSieve.Node.Attribute do
   defp get_name_and_type(module, key) do
     :fields
     |> module.__schema__()
+    |> Utils.filter_list(nil, not_filterable_fields(module))
     |> find_field(key)
     |> case do
       nil -> nil
@@ -65,5 +67,14 @@ defmodule ExSieve.Node.Attribute do
     fields
     |> Enum.sort_by(&String.length(to_string(&1)), &>=/2)
     |> Enum.find(&String.starts_with?(key, to_string(&1)))
+  end
+
+  defp not_filterable_fields(schema) do
+    schema
+    |> function_exported?(:__ex_sieve_not_filterable_fields__, 0)
+    |> case do
+      true -> apply(schema, :__ex_sieve_not_filterable_fields__, [])
+      false -> nil
+    end
   end
 end
