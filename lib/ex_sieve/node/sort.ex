@@ -11,7 +11,11 @@ defmodule ExSieve.Node.Sort do
   @directions ~w(desc asc)
 
   @spec extract(String.t() | list(String.t()), module(), Config.t()) ::
-          list(t | {:error, :attribute_not_found | :direction_not_found})
+          list(
+            t()
+            | {:error, {:attribute_not_found, key :: String.t()}}
+            | {:error, {:direction_not_found, invalid_direction :: String.t()}}
+          )
   def extract(value, schema, %Config{} = config) when is_bitstring(value) do
     value
     |> build(schema, config)
@@ -26,11 +30,15 @@ defmodule ExSieve.Node.Sort do
     |> result(parse_direction(value))
   end
 
-  defp result(_attribute, nil), do: {:error, :direction_not_found}
+  defp result(_attribute, {:error, invalid_dir}), do: {:error, {:direction_not_found, invalid_dir}}
   defp result({:error, reason}, _direction), do: {:error, reason}
-  defp result(attribute, direction), do: %Sort{attribute: attribute, direction: String.to_atom(direction)}
+  defp result(attribute, {:ok, direction}), do: %Sort{attribute: attribute, direction: String.to_atom(direction)}
 
   defp parse_direction(value) do
-    value |> String.split(~r/\s+/) |> Enum.find(&Enum.member?(@directions, &1))
+    case String.split(value, ~r/\s+/) do
+      [_, direction] when direction in @directions -> {:ok, direction}
+      [_, invalid_direction] -> {:error, invalid_direction}
+      _ -> {:error, value}
+    end
   end
 end

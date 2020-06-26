@@ -21,11 +21,11 @@ defmodule ExSieve.Node.SortTest do
     end
 
     test "return {:error, :direction_not_found}" do
-      assert [{:error, :direction_not_found}] == Sort.extract("post_body_asc", Comment, %Config{})
+      assert [{:error, {:direction_not_found, "foo"}}] == Sort.extract("post_body foo", Comment, %Config{})
     end
 
     test "return {:error, :attribute_not_found}" do
-      assert [{:error, :attribute_not_found}] == Sort.extract("tid asc", Comment, %Config{})
+      assert [{:error, {:attribute_not_found, "tid"}}] == Sort.extract("tid asc", Comment, %Config{})
     end
   end
 end

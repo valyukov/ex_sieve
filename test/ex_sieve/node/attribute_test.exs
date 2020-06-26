@@ -37,28 +37,35 @@ defmodule ExSieve.Node.AttributeTest do
     end
 
     test "return {:error, :attribute_not_found}" do
-      assert {:error, :attribute_not_found} == Attribute.extract("tid_eq", Comment, %Config{})
+      assert {:error, {:attribute_not_found, "tid_eq"}} == Attribute.extract("tid_eq", Comment, %Config{})
     end
 
     test "return {:error, :attribute_not_found} when parent attribute doesn't exist" do
-      assert {:error, :attribute_not_found} == Attribute.extract("post_tid", Comment, %Config{})
+      assert {:error, {:attribute_not_found, "post_tid"}} == Attribute.extract("post_tid", Comment, %Config{})
     end
 
     test "return {:error, :attribute_not_found} for not filterable field" do
-      assert {:error, :attribute_not_found} == Attribute.extract("inserted_at_eq", Comment, %Config{})
+      assert {:error, {:attribute_not_found, "inserted_at_eq"}} ==
+               Attribute.extract("inserted_at_eq", Comment, %Config{})
     end
 
     test "return {:error, :attribute_not_found} for not filterable field in assoc" do
-      assert {:error, :attribute_not_found} == Attribute.extract("comments_inserted_at_eq", User, %Config{})
+      assert {:error, {:attribute_not_found, "comments_inserted_at_eq"}} ==
+               Attribute.extract("comments_inserted_at_eq", User, %Config{})
     end
 
     test "return {:error, :attribute_not_found} for not filterable assoc" do
-      assert {:error, :attribute_not_found} == Attribute.extract("addresses_street_eq", User, %Config{})
+      assert {:error, {:attribute_not_found, "addresses_street_eq"}} ==
+               Attribute.extract("addresses_street_eq", User, %Config{})
     end
 
     test "return {:error, :too_deep} when max_depth is exceeded" do
-      assert {:error, :too_deep} == Attribute.extract("posts_comments_body_cont", User, %Config{max_depth: 0})
-      assert {:error, :too_deep} == Attribute.extract("posts_comments_body_cont", User, %Config{max_depth: 1})
+      assert {:error, {:too_deep, "posts_comments_body_cont"}} ==
+               Attribute.extract("posts_comments_body_cont", User, %Config{max_depth: 0})
+
+      assert {:error, {:too_deep, "posts_comments_body_cont"}} ==
+               Attribute.extract("posts_comments_body_cont", User, %Config{max_depth: 1})
+
       assert %Attribute{} = Attribute.extract("posts_comments_body_cont", User, %Config{max_depth: 2})
       assert %Attribute{} = Attribute.extract("posts_comments_body_cont", User, %Config{max_depth: :full})
     end

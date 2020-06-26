@@ -9,7 +9,10 @@ defmodule ExSieve.Node.Attribute do
   @type t :: %__MODULE__{}
 
   @spec extract(key :: String.t(), module | %{related: module}, Config.t()) ::
-          t() | {:error, :attribute_not_found | :too_deep}
+          t()
+          | {:error, {:attribute_not_found, key :: String.t()}}
+          | {:error, {:too_deep, key :: String.t()}}
+
   def extract(key, module, config) do
     extract(key, module, {:name, get_name_and_type(module, key)}, [], config)
   end
@@ -18,7 +21,7 @@ defmodule ExSieve.Node.Attribute do
     if md == :full or (is_integer(md) and length(parents) < md) do
       extract(key, module, {:assoc, get_assoc(module, key)}, parents, config)
     else
-      {:error, :too_deep}
+      {:error, {:too_deep, Utils.rebuild_key(key, parents)}}
     end
   end
 
@@ -26,7 +29,7 @@ defmodule ExSieve.Node.Attribute do
     %Attribute{parent: Enum.reverse(parents), name: name, type: type}
   end
 
-  defp extract(_, _, {:assoc, nil}, _, _), do: {:error, :attribute_not_found}
+  defp extract(key, _, {:assoc, nil}, parents, _), do: {:error, {:attribute_not_found, Utils.rebuild_key(key, parents)}}
 
   defp extract(key, module, {:assoc, assoc}, parents, config) do
     key = String.replace_prefix(key, "#{assoc}_", "")

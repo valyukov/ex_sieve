@@ -55,7 +55,12 @@ defmodule ExSieve.Builder.Where do
   @spec composite_predicates :: [String.t()]
   def composite_predicates, do: @all_any_predicates_str
 
-  @spec build(Ecto.Queryable.t(), Grouping.t(), Config.t()) :: {:ok, Ecto.Query.t()} | {:error, any()}
+  @spec build(Ecto.Queryable.t(), Grouping.t(), Config.t()) ::
+          {:ok, Ecto.Query.t()}
+          | {:error, {:predicate_not_found, predicate :: atom()}}
+          | {:error, {:invalid_type, field :: String.t()}}
+          | {:error, {:invalid_value, {field :: String.t(), value :: any()}}}
+
   def build(query, %Grouping{combinator: combinator} = grouping, config) when combinator in ~w(and or)a do
     case dynamic_grouping(grouping, config) do
       {:error, _} = err -> err
@@ -124,20 +129,20 @@ defmodule ExSieve.Builder.Where do
     unless allowed_types == :all do
       defp validate_dynamic(unquote(predicate), %Attribute{type: type} = attr, _)
            when type not in unquote(allowed_types) do
-        {:error, {:invalid_type, attr}}
+        {:error, {:invalid_type, Utils.rebuild_key(attr)}}
       end
     end
 
     unless allowed_values == :all do
       defp validate_dynamic(unquote(predicate), attr, [value | _]) when value not in unquote(allowed_values) do
-        {:error, {:invalid_value, attr}}
+        {:error, {:invalid_value, {Utils.rebuild_key(attr), value}}}
       end
     end
   end
 
   defp validate_dynamic(predicate, _attribute, _values) when predicate in @predicates, do: :ok
 
-  defp validate_dynamic(_predicate, _attribute, _values), do: {:error, :predicate_not_found}
+  defp validate_dynamic(predicate, _attribute, _values), do: {:error, {:predicate_not_found, predicate}}
 
   defp build_dynamic(:eq, %Attribute{parent: [], name: name}, [value | _]) do
     dynamic([p], field(p, ^name) == ^value)
@@ -307,7 +312,7 @@ defmodule ExSieve.Builder.Where do
     dynamic([{^parent_name(parent), p}], not (is_nil(field(p, ^name)) or field(p, ^name) == ^""))
   end
 
-  defp build_dynamic(_predicate, _attribute, _values), do: {:error, :predicate_not_found}
+  defp build_dynamic(predicate, _attribute, _values), do: {:error, {:predicate_not_found, predicate}}
 
   defp escape_like_value(value), do: Regex.replace(~r/([\%_])/, value, ~S(\\\1))
 end

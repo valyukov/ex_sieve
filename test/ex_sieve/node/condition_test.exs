@@ -68,32 +68,37 @@ defmodule ExSieve.Node.ConditionTest do
     end
 
     test "return {:error, :predicate_not_found}" do
-      assert {:error, :predicate_not_found} == Condition.extract("post_id_and_id", 1, Comment, %Config{})
+      assert {:error, {:predicate_not_found, "post_id_and_id"}} ==
+               Condition.extract("post_id_and_id", 1, Comment, %Config{})
     end
 
     test "return {:error, :predicate_not_found} for excluded predicate" do
       config = %Config{ignore_errors: false, except_predicates: ["eq"]}
-      assert {:error, :predicate_not_found} == Condition.extract("post_id_eq", 1, Comment, config)
+      assert {:error, {:predicate_not_found, "post_id_eq"}} == Condition.extract("post_id_eq", 1, Comment, config)
 
       config = %Config{ignore_errors: false, except_predicates: [:composite]}
-      assert {:error, :predicate_not_found} == Condition.extract("body_not_cont_all", ["foo", "bar"], Comment, config)
+
+      assert {:error, {:predicate_not_found, "body_not_cont_all"}} ==
+               Condition.extract("body_not_cont_all", ["foo", "bar"], Comment, config)
     end
 
     test "return {:error, :predicate_not_found} for predicate not in only" do
       config = %Config{ignore_errors: false, only_predicates: ["eq"]}
-      assert {:error, :predicate_not_found} == Condition.extract("post_id_in", 1, Comment, config)
+      assert {:error, {:predicate_not_found, "post_id_in"}} == Condition.extract("post_id_in", 1, Comment, config)
 
       config = %Config{ignore_errors: false, only_predicates: [:composite]}
-      assert {:error, :predicate_not_found} == Condition.extract("body_cont", "foo", Comment, config)
+      assert {:error, {:predicate_not_found, "body_cont"}} == Condition.extract("body_cont", "foo", Comment, config)
     end
 
     test "return {:error, :attribute_not_found}" do
-      assert {:error, :attribute_not_found} == Condition.extract("tid_eq", 1, Comment, %Config{})
-      assert {:error, :attribute_not_found} == Condition.extract("posts_comments_foo_eq", 1, User, %Config{})
+      assert {:error, {:attribute_not_found, "tid_eq"}} == Condition.extract("tid_eq", 1, Comment, %Config{})
+
+      assert {:error, {:attribute_not_found, "posts_comments_foo_eq"}} ==
+               Condition.extract("posts_comments_foo_eq", 1, User, %Config{})
     end
 
     test "return {:error, :value_is_empty}" do
-      assert {:error, :value_is_empty} == Condition.extract("id_eq", "", Comment, %Config{})
+      assert {:error, {:value_is_empty, "id_eq"}} == Condition.extract("id_eq", "", Comment, %Config{})
     end
   end
 end

@@ -1,6 +1,6 @@
 defmodule ExSieve.Schema do
   @moduledoc """
-  `ExSieve.Schema` is meant to be `use`d by a module using `Ecto.Schema`.
+  `ExSieve.Schema` is meant to be `use`d by modules using `Ecto.Schema`.
 
   When used, optional configuration parameters specific for the schema
   can be provided. For details about cofngiuration parameters see
@@ -35,7 +35,7 @@ defmodule ExSieve.Schema do
       end
 
   Filters for fields that are in the list are ignored (an error is returned
-  if `ignore_errors` is `false`). By default all fields are filterable.
+  if `:ignore_errors` is `false`). By default all fields are filterable.
   """
 
   defmacro __using__(opts) do
