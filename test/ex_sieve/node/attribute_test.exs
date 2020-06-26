@@ -44,6 +44,18 @@ defmodule ExSieve.Node.AttributeTest do
       assert {:error, :attribute_not_found} == Attribute.extract("post_tid", Comment, %Config{})
     end
 
+    test "return {:error, :attribute_not_found} for not filterable field" do
+      assert {:error, :attribute_not_found} == Attribute.extract("inserted_at_eq", Comment, %Config{})
+    end
+
+    test "return {:error, :attribute_not_found} for not filterable field in assoc" do
+      assert {:error, :attribute_not_found} == Attribute.extract("comments_inserted_at_eq", User, %Config{})
+    end
+
+    test "return {:error, :attribute_not_found} for not filterable assoc" do
+      assert {:error, :attribute_not_found} == Attribute.extract("addresses_street_eq", User, %Config{})
+    end
+
     test "return {:error, :too_deep} when max_depth is exceeded" do
       assert {:error, :too_deep} == Attribute.extract("posts_comments_body_cont", User, %Config{max_depth: 0})
       assert {:error, :too_deep} == Attribute.extract("posts_comments_body_cont", User, %Config{max_depth: 1})
