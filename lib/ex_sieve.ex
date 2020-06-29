@@ -1,15 +1,9 @@
 defmodule ExSieve do
   @moduledoc """
-  ExSieve is a object query translator to Ecto.Query.
-  """
+  `ExSieve` is meant to be `use`d by a module implementing `Ecto.Repo` behaviour.
 
-  alias ExSieve.Config
-
-  @doc """
-  ExSieve is meant to be `use`d by a Ecto.Repo.
-
-  When `use`d, an optional default for `ignore_erros` can be provided.
-  If `ignore_erros` is not provided, a default of `true` will be used.
+  When used, optional configuration parameters can be provided.
+  For details about cofngiuration parameters see `t:ExSieve.Config.t/0`.
 
       defmodule MyApp.Repo do
         use Ecto.Repo, otp_app: :my_app
@@ -21,7 +15,7 @@ defmodule ExSieve do
         use ExSieve, ignore_erros: true
       end
 
-    When `use` is called, a `filter` function is defined in the Repo.
+  When `use` is called, a `filter` function is defined in the Repo.
   """
 
   defmacro __using__(opts) do
@@ -31,13 +25,22 @@ defmodule ExSieve do
       @ex_sieve_defaults unquote(opts)
 
       def filter(queryable, params, options \\ %{}) do
-        ExSieve.Filter.filter(queryable, params, Config.new(@ex_sieve_defaults, options))
+        ExSieve.Filter.filter(queryable, params, @ex_sieve_defaults, options)
       end
     end
   end
 
-  @typep error :: :invalid_query | :attribute_not_found | :predicate_not_found | :direction_not_found | :value_is_empty
-  @type result :: Ecto.Query.t() | {:error, error}
+  @type result :: Ecto.Query.t() | error()
+
+  @type error ::
+          {:error, :invalid_query}
+          | {:error, {:too_deep, key :: String.t()}}
+          | {:error, {:predicate_not_found, key :: String.t()}}
+          | {:error, {:attribute_not_found, key :: String.t()}}
+          | {:error, {:direction_not_found, invalid_direction :: String.t()}}
+          | {:error, {:value_is_empty, key :: String.t()}}
+          | {:error, {:invalid_type, field :: String.t()}}
+          | {:error, {:invalid_value, {field :: String.t(), value :: any()}}}
 
   @doc """
   Filters the given query based on params.

@@ -86,11 +86,12 @@ defmodule ExSieve.Node.GroupingTest do
     end
 
     test "return {:error, :predicate_not_found}", %{config: config} do
-      assert {:error, :predicate_not_found} == Grouping.extract(%{"post_id_and_id" => 1}, Comment, config)
+      assert {:error, {:predicate_not_found, "post_id_and_id"}} ==
+               Grouping.extract(%{"post_id_and_id" => 1}, Comment, config)
     end
 
     test "return {:error, :attribute_not_found}", %{config: config} do
-      assert {:error, :attribute_not_found} == Grouping.extract(%{"tid_eq" => 1}, Comment, config)
+      assert {:error, {:attribute_not_found, "tid_eq"}} == Grouping.extract(%{"tid_eq" => 1}, Comment, config)
     end
 
     test "return nil when attribute not found and ignore_errors is true" do

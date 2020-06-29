@@ -4,24 +4,28 @@ defmodule ExSieve.Node do
   alias ExSieve.Node.{Grouping, Sort}
   alias ExSieve.{Config, Utils}
 
-  @typep error :: {:error, :attribute_not_found | :predicate_not_found | :direction_not_found}
+  @type error ::
+          {:error, {:too_deep, key :: String.t()}}
+          | {:error, {:predicate_not_found, key :: String.t()}}
+          | {:error, {:attribute_not_found, key :: String.t()}}
+          | {:error, {:direction_not_found, invalid_direction :: String.t()}}
+          | {:error, {:value_is_empty, key :: String.t()}}
 
   @spec call(%{(atom | binary) => term}, atom, Config.t()) :: {:ok, Grouping.t(), list(Sort.t())} | error
   def call(params_with_sort, schema, config) do
     params_with_sort = stringify_keys(params_with_sort)
-    {params, sorts} = extract_sorts(params_with_sort, schema)
-    grouping = Grouping.extract(params, schema, config)
-    result(grouping, Utils.get_error(sorts, config))
+    {params, sorts} = extract_sorts(params_with_sort, schema, config)
+
+    with sorts when is_list(sorts) <- Utils.get_error(sorts, config),
+         %Grouping{} = grouping <- Grouping.extract(params, schema, config) do
+      {:ok, grouping, sorts}
+    end
   end
 
-  defp extract_sorts(params, schema) do
+  defp extract_sorts(params, schema, config) do
     {sorts, params} = Map.pop(params, "s", [])
-    {params, Sort.extract(sorts, schema)}
+    {params, Sort.extract(sorts, schema, config)}
   end
-
-  defp result({:error, reason}, _sorts), do: {:error, reason}
-  defp result(_grouping, {:error, reason}), do: {:error, reason}
-  defp result(grouping, sorts), do: {:ok, grouping, sorts}
 
   defp stringify_keys(nil), do: nil
   defp stringify_keys(%{__struct__: _struct} = value), do: value
