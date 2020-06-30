@@ -1,6 +1,7 @@
 {
     "skip_files": [
-        "test"
+        "test",
+        "lib/ex_sieve/custom_predicate.ex"
     ],
     "coverage_options": {
         "treat_no_relevant_lines_as_covered": true
