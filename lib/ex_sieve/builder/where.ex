@@ -311,14 +311,26 @@ defmodule ExSieve.Builder.Where do
   end
 
   for {cp, frag} <- custom_predicates() do
-    arity = ExSieve.CustomPredicate.Utils.get_arity(frag)
+    {value_names_pinned, values_list} =
+      frag
+      |> ExSieve.CustomPredicate.Utils.get_arity()
+      |> case do
+        arity when arity < 1 ->
+          {[], quote(do: _)}
 
-    value_names = Enum.map(1..arity, &quote(do: unquote(Macro.var(:"v#{&1}", __MODULE__))))
-    value_names_pinned = Enum.map(1..arity, &quote(do: ^unquote(Macro.var(:"v#{&1}", __MODULE__))))
-    values = quote do: [unquote_splicing(value_names) | _]
+        arity ->
+          {
+            Enum.map(1..arity, &quote(do: ^unquote(Macro.var(:"v#{&1}", __MODULE__)))),
+            quote(do: [unquote_splicing(Enum.map(1..arity, &Macro.var(:"v#{&1}", __MODULE__))) | _])
+          }
+      end
 
-    defp build_dynamic(unquote(cp), %Attribute{parent: [], name: name}, unquote(values)) do
+    defp build_dynamic(unquote(cp), %Attribute{parent: [], name: name}, unquote(values_list)) do
       dynamic([p], unquote(cp)(field(p, ^name), unquote_splicing(value_names_pinned)))
+    end
+
+    defp build_dynamic(unquote(cp), %Attribute{parent: parent, name: name}, unquote(values_list)) do
+      dynamic([{^parent_name(parent), p}], unquote(cp)(field(p, ^name), unquote_splicing(value_names_pinned)))
     end
   end
 
