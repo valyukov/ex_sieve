@@ -10,6 +10,7 @@ defmodule ExSieve.Builder do
           | {:error, {:predicate_not_found, predicate :: atom()}}
           | {:error, {:invalid_type, field :: String.t()}}
           | {:error, {:invalid_value, {field :: String.t(), value :: any()}}}
+          | {:error, {:too_few_values, {key :: String.t(), arity :: non_neg_integer()}}}
   def call(query, grouping, sorts, config) do
     with {:ok, query} <- Join.build(query, grouping, sorts),
          {:ok, query} <- Where.build(query, grouping, config),

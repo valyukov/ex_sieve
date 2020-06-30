@@ -60,6 +60,7 @@ defmodule ExSieve.Builder.Where do
           | {:error, {:predicate_not_found, predicate :: atom()}}
           | {:error, {:invalid_type, field :: String.t()}}
           | {:error, {:invalid_value, {field :: String.t(), value :: any()}}}
+          | {:error, {:too_few_values, {key :: String.t(), arity :: non_neg_integer()}}}
 
   def build(query, %Grouping{combinator: combinator} = grouping, config) when combinator in ~w(and or)a do
     case dynamic_grouping(grouping, config) do
@@ -311,10 +312,10 @@ defmodule ExSieve.Builder.Where do
   end
 
   for {cp, frag} <- custom_predicates() do
+    arity = ExSieve.CustomPredicate.Utils.get_arity(frag)
+
     {value_names_pinned, values_list} =
-      frag
-      |> ExSieve.CustomPredicate.Utils.get_arity()
-      |> case do
+      case arity do
         arity when arity < 1 ->
           {[], quote(do: _)}
 
@@ -331,6 +332,10 @@ defmodule ExSieve.Builder.Where do
 
     defp build_dynamic(unquote(cp), %Attribute{parent: parent, name: name}, unquote(values_list)) do
       dynamic([{^parent_name(parent), p}], unquote(cp)(field(p, ^name), unquote_splicing(value_names_pinned)))
+    end
+
+    defp build_dynamic(unquote(cp), attr, _values) do
+      {:error, {:too_few_values, {"#{Utils.rebuild_key(attr)}_#{unquote(cp)}", unquote(arity)}}}
     end
   end
 

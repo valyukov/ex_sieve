@@ -41,6 +41,7 @@ defmodule ExSieve do
           | {:error, {:value_is_empty, key :: String.t()}}
           | {:error, {:invalid_type, field :: String.t()}}
           | {:error, {:invalid_value, {field :: String.t(), value :: any()}}}
+          | {:error, {:too_few_values, {key :: String.t(), arity :: non_neg_integer()}}}
 
   @doc """
   Filters the given query based on params.
