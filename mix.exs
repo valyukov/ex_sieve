@@ -42,8 +42,8 @@ defmodule ExSieve.Mixfile do
       {:credo, "~> 1.3", only: :dev},
       {:dialyxir, "~> 1.0", only: :dev},
       {:ex_doc, "~> 0.21", only: :dev},
+      {:ecto_sql, "~> 3.0", only: [:dev, :test]},
       {:ex_machina, "~> 2.0", only: :test},
-      {:ecto_sql, "~> 3.0", only: :test},
       {:postgrex, "~> 0.15", only: :test},
       {:excoveralls, "~> 0.10", only: :test}
     ]

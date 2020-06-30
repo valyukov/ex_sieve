@@ -5,6 +5,8 @@ defmodule ExSieve.Node.Condition do
   alias ExSieve.Builder.Where
   alias ExSieve.Node.{Attribute, Condition}
 
+  import ExSieve.CustomPredicate, only: [custom_predicates: 0]
+
   defstruct values: nil, attributes: nil, predicate: nil, combinator: nil
 
   @type t :: %__MODULE__{}
@@ -55,7 +57,10 @@ defmodule ExSieve.Node.Condition do
   defp get_predicate(key, config) do
     {only_predicates, except_predicates} = replace_groups(config.only_predicates, config.except_predicates)
 
+    custom_predicates = custom_predicates() |> Keyword.keys() |> Enum.map(&Atom.to_string/1)
+
     Where.predicates()
+    |> Kernel.++(custom_predicates)
     |> Utils.filter_list(only_predicates, except_predicates)
     |> do_get_predicate(key)
   end

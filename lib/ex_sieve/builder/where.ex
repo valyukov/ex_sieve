@@ -1,6 +1,7 @@
 defmodule ExSieve.Builder.Where do
   @moduledoc false
   import Ecto.Query
+  import ExSieve.CustomPredicate
 
   alias ExSieve.{Config, Utils}
   alias ExSieve.Node.{Attribute, Condition, Grouping}
@@ -43,7 +44,6 @@ defmodule ExSieve.Builder.Where do
                       end)
   @all_any_predicates_str Enum.map(@all_any_predicates, &Atom.to_string/1)
 
-  @predicates @basic_predicates ++ @all_any_predicates
   @predicates_str @basic_predicates_str ++ @all_any_predicates_str
 
   @spec predicates() :: [String.t()]
@@ -140,9 +140,7 @@ defmodule ExSieve.Builder.Where do
     end
   end
 
-  defp validate_dynamic(predicate, _attribute, _values) when predicate in @predicates, do: :ok
-
-  defp validate_dynamic(predicate, _attribute, _values), do: {:error, {:predicate_not_found, predicate}}
+  defp validate_dynamic(_predicate, _attribute, _values), do: :ok
 
   defp build_dynamic(:eq, %Attribute{parent: [], name: name}, [value | _]) do
     dynamic([p], field(p, ^name) == ^value)
@@ -310,6 +308,18 @@ defmodule ExSieve.Builder.Where do
 
   defp build_dynamic(:present, %Attribute{parent: parent, name: name}, _value) do
     dynamic([{^parent_name(parent), p}], not (is_nil(field(p, ^name)) or field(p, ^name) == ^""))
+  end
+
+  for {cp, frag} <- custom_predicates() do
+    arity = ExSieve.CustomPredicate.Utils.get_arity(frag)
+
+    value_names = Enum.map(1..arity, &quote(do: unquote(Macro.var(:"v#{&1}", __MODULE__))))
+    value_names_pinned = Enum.map(1..arity, &quote(do: ^unquote(Macro.var(:"v#{&1}", __MODULE__))))
+    values = quote do: [unquote_splicing(value_names) | _]
+
+    defp build_dynamic(unquote(cp), %Attribute{parent: [], name: name}, unquote(values)) do
+      dynamic([p], unquote(cp)(field(p, ^name), unquote_splicing(value_names_pinned)))
+    end
   end
 
   defp build_dynamic(predicate, _attribute, _values), do: {:error, {:predicate_not_found, predicate}}

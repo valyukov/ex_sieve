@@ -9,6 +9,7 @@ defmodule ExSieve.Post do
     field :body
     field :published, :boolean
     field :published_at, :naive_datetime
+    field :metadata, :map
 
     timestamps()
   end
