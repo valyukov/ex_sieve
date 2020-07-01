@@ -1,4 +1,16 @@
 # Changelog
+
+## 0.8.0 - 01/07/2020
+ * Handle nested relationships (more than one level deep)
+ * Avoid inserting duplicated joins when possible
+ * Exclude some meaningless composite predicates
+ * Validate predicates against allowed ecto types
+ * Escape `like` queries
+ * Add more configuration parameters
+ * Allow overriding configuration on a per-schema basis
+ * Allow user to define custom predicates (via ecto fragments)
+ * Allow user to define predicate aliases
+
 ## 0.7.0 - 25/05/2020
  * Require Elixir ~> 1.7
  * Drop support for ecto 2.x, add support for ecto ~> 3.3
