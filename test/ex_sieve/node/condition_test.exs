@@ -72,6 +72,16 @@ defmodule ExSieve.Node.ConditionTest do
       assert condition.predicate == :has_key
     end
 
+    test "return Condition for aliased predicate" do
+      condition = Condition.extract("body_m", ["%foo%"], Post, %Config{})
+      assert condition.predicate == :matches
+    end
+
+    test "return Condition for custom aliased predicate" do
+      condition = Condition.extract("metadata_hk", ["foo"], Post, %Config{})
+      assert condition.predicate == :has_key
+    end
+
     test "return {:error, :predicate_not_found}" do
       assert {:error, {:predicate_not_found, "post_id_and_id"}} ==
                Condition.extract("post_id_and_id", 1, Comment, %Config{})
@@ -93,6 +103,22 @@ defmodule ExSieve.Node.ConditionTest do
 
       config = %Config{ignore_errors: false, only_predicates: [:composite]}
       assert {:error, {:predicate_not_found, "body_cont"}} == Condition.extract("body_cont", "foo", Comment, config)
+    end
+
+    test "return {:error, :predicate_not_found} for invalid alias" do
+      assert {:error, {:predicate_not_found, "title_f"}} == Condition.extract("title_f", 1, Post, %Config{})
+    end
+
+    test "return {:error, :predicate_not_found} for alias predicate of an excluded one" do
+      config = %Config{ignore_errors: false, except_predicates: ["eq"]}
+      assert {:error, {:predicate_not_found, "post_id_e"}} == Condition.extract("post_id_e", 1, Comment, config)
+    end
+
+    test "return {:error, :predicate_not_found} for alias predicate of one not in only" do
+      config = %Config{ignore_errors: false, only_predicates: ["eq"]}
+
+      assert {:error, {:predicate_not_found, "post_title_m"}} ==
+               Condition.extract("post_title_m", "%a", Comment, config)
     end
 
     test "return {:error, :attribute_not_found}" do

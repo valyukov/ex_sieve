@@ -204,6 +204,24 @@ defmodule ExSieve do
     AND (posts.metadata ->> 'status') = 'approved';
   ```
 
+  ## Predicate aliases
+
+  Aliases to built-in and custom predicates can be configured in using the
+  `:predicate_aliases` key in `:ex_sieve` application environment.
+  It should be a keyword list that maps an alias name (atom) to a predicate (atom).
+
+  Aliases for not existent predicates are silently discarded, multiple aliases
+  can be defined for the same predicate.
+
+      config :ex_sieve,
+        custom_predicates: [
+          has_key: "? \\\\? ?"
+        ],
+        predicate_aliases: [
+          m: :matches,
+          hk: :has_key
+        ]
+
   ## Notes
 
   ### LIKE injection
