@@ -5,6 +5,12 @@ config :ex_sieve,
     has_key: "? \\? ?",
     not_liked: "(? ->> 'score') :: int < 6",
     key_is: "(? ->> ?) = ?"
+  ],
+  predicate_aliases: [
+    m: :matches,
+    e: :eq,
+    f: :foo,
+    hk: :has_key
   ]
 
 config :ex_sieve, ecto_repos: [ExSieve.Repo]

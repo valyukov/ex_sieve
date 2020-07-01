@@ -3,57 +3,8 @@ defmodule ExSieve.Builder.Where do
   import Ecto.Query
   import ExSieve.CustomPredicate
 
-  alias ExSieve.{Config, Utils}
+  alias ExSieve.{Config, Predicate, Utils}
   alias ExSieve.Node.{Attribute, Condition, Grouping}
-
-  @true_values [1, true, "1", "T", "t", "true", "TRUE"]
-
-  # {basic_predicate, allowed_types | :all, allowed_values | :all, all_any_combinators}
-  @predicates_opts [
-    {:eq, :all, :all, [:any]},
-    {:not_eq, :all, :all, [:all]},
-    {:cont, [:string], :all, [:all, :any]},
-    {:not_cont, [:string], :all, [:all, :any]},
-    {:lt, :all, :all, []},
-    {:lteq, :all, :all, []},
-    {:gt, :all, :all, []},
-    {:gteq, :all, :all, []},
-    {:in, :all, :all, []},
-    {:not_in, :all, :all, []},
-    {:matches, [:string], :all, [:all, :any]},
-    {:does_not_match, [:string], :all, [:all, :any]},
-    {:start, [:string], :all, [:any]},
-    {:not_start, [:string], :all, [:all]},
-    {:end, [:string], :all, [:any]},
-    {:not_end, [:string], :all, [:all]},
-    {true, [:boolean], @true_values, []},
-    {:not_true, [:boolean], @true_values, []},
-    {false, [:boolean], @true_values, []},
-    {:not_false, [:boolean], @true_values, []},
-    {:present, [:string], @true_values, []},
-    {:blank, [:string], @true_values, []},
-    {:null, :all, @true_values, []},
-    {:not_null, :all, @true_values, []}
-  ]
-
-  @basic_predicates Enum.map(@predicates_opts, &elem(&1, 0))
-  @basic_predicates_str Enum.map(@basic_predicates, &Atom.to_string/1)
-
-  @all_any_predicates Enum.flat_map(@predicates_opts, fn {predicate, _, _, all_any} ->
-                        Enum.map(all_any, &:"#{predicate}_#{&1}")
-                      end)
-  @all_any_predicates_str Enum.map(@all_any_predicates, &Atom.to_string/1)
-
-  @predicates_str @basic_predicates_str ++ @all_any_predicates_str
-
-  @spec predicates() :: [String.t()]
-  def predicates, do: @predicates_str
-
-  @spec basic_predicates :: [String.t()]
-  def basic_predicates, do: @basic_predicates_str
-
-  @spec composite_predicates :: [String.t()]
-  def composite_predicates, do: @all_any_predicates_str
 
   @spec build(Ecto.Queryable.t(), Grouping.t(), Config.t()) ::
           {:ok, Ecto.Query.t()}
@@ -105,7 +56,7 @@ defmodule ExSieve.Builder.Where do
   defp parent_name(parents), do: parents |> Enum.join("_") |> String.to_atom()
 
   # composite predicates
-  for {basic_predicate, _, _, all_any} <- @predicates_opts do
+  for {basic_predicate, _, _, all_any} <- Predicate.specs() do
     for extension <- all_any do
       predicate = :"#{basic_predicate}_#{extension}"
       combinator = Keyword.get([all: :and, any: :or], extension)
@@ -126,7 +77,7 @@ defmodule ExSieve.Builder.Where do
     end
   end
 
-  for {predicate, allowed_types, allowed_values, _} <- @predicates_opts do
+  for {predicate, allowed_types, allowed_values, _} <- Predicate.specs() do
     unless allowed_types == :all do
       defp validate_dynamic(unquote(predicate), %Attribute{type: type} = attr, _)
            when type not in unquote(allowed_types) do
