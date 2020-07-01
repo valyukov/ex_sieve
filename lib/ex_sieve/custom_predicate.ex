@@ -1,5 +1,9 @@
 defmodule ExSieve.CustomPredicate do
+  @moduledoc false
+
   defmodule Utils do
+    @moduledoc false
+
     @spec get_arity(binary) :: integer
     def get_arity(fragment) do
       not_escaped = ~r/\?/ |> Regex.scan(fragment) |> List.flatten() |> length()

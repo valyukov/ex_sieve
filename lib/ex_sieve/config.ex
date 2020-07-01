@@ -1,4 +1,8 @@
 defmodule ExSieve.Config do
+  @moduledoc """
+  Struct with `ExSieve` configuration options.
+  """
+
   defstruct ignore_errors: true, max_depth: :full, except_predicates: nil, only_predicates: nil
 
   @typedoc """
