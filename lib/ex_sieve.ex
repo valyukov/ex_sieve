@@ -167,6 +167,43 @@ defmodule ExSieve do
     * `or`
     * `and`
 
+  ## Custom predicates
+
+  ExSieve allows to define user-specific predicates.
+
+  These predicates must be defined at compile time with the `:custom_predicates` key
+  of the `:ex_sieve` application environment. It should be a keyword list that maps
+  predicate_names (atom) to `Ecto.Query.API.fragment/1` strings.
+
+      config :ex_sieve,
+        custom_predicates: [
+          has_key: "? \\\\? ?",
+          less_than_6: "? < 6",
+          key_is: "(? ->> ?) = ?"
+        ]
+
+  The first argument given to the fragment is the field while next ones are the values
+  given in the query string.
+
+  Given this json representation of the query
+
+  ```json
+  {
+    "metadata_has_key": "tag",
+    "score_less_than_6": true,
+    "metadata_key_is: ["status", "approved"]
+  }
+  ```
+
+  the following SQL query is sent to the database
+
+  ```sql
+  SELECT posts.* FROM posts
+    WHERE posts.metadata ? 'tag'
+    AND posts.score < 6
+    AND (posts.metadata ->> 'status') = 'approved';
+  ```
+
   ## Notes
 
   ### LIKE injection

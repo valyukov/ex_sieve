@@ -20,7 +20,7 @@ end
 ## Nice to have
 
 - Add advanced search documentation
-- Custom query function (fragments or custom query functions)
+- Configure predicate aliases
 - Demo project
 
 ## Ecto internals currently used
