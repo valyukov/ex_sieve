@@ -1,10 +1,12 @@
 defmodule ExSieve.Mixfile do
   use Mix.Project
 
+  @version "0.7.0"
+
   def project do
     [
       app: :ex_sieve,
-      version: "0.7.0",
+      version: @version,
       elixir: "~> 1.7",
       elixirc_paths: elixirc_paths(Mix.env()),
       package: package(),
@@ -17,12 +19,7 @@ defmodule ExSieve.Mixfile do
       # Docs
       name: "ExSieve",
       source_url: "https://github.com/valyukov/ex_sieve",
-      docs: [
-        main: "readme",
-        extras: [
-          "README.md"
-        ]
-      ]
+      docs: docs()
     ]
   end
 
@@ -42,8 +39,8 @@ defmodule ExSieve.Mixfile do
       {:credo, "~> 1.3", only: :dev},
       {:dialyxir, "~> 1.0", only: :dev},
       {:ex_doc, "~> 0.21", only: :dev},
+      {:ecto_sql, "~> 3.0", only: [:dev, :test]},
       {:ex_machina, "~> 2.0", only: :test},
-      {:ecto_sql, "~> 3.0", only: :test},
       {:postgrex, "~> 0.15", only: :test},
       {:excoveralls, "~> 0.10", only: :test}
     ]
@@ -65,6 +62,16 @@ defmodule ExSieve.Mixfile do
       licenses: ["MIT"],
       links: %{"GitHub" => "https://github.com/valyukov/ex_sieve"},
       files: ["README.md", "LICENSE", "mix.exs", "lib/*", "CHANGELOG.md"]
+    ]
+  end
+
+  defp docs do
+    [
+      main: "ExSieve",
+      source_ref: "v#{@version}",
+      canonical: "http://hexdocs.pm/ex_sieve",
+      source_url: "https://github.com/valyukov/ex_sieve",
+      extras: []
     ]
   end
 end

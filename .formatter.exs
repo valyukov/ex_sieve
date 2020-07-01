@@ -6,5 +6,5 @@
     "mix.exs"
   ],
   line_length: 120,
-  import_deps: [:ecto]
+  import_deps: [:ecto, :ecto_sql]
 ]

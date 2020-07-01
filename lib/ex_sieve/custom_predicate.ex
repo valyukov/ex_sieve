@@ -1,0 +1,34 @@
+defmodule ExSieve.CustomPredicate do
+  @moduledoc false
+
+  defmodule Utils do
+    @moduledoc false
+
+    @spec get_arity(binary) :: integer
+    def get_arity(fragment) do
+      not_escaped = ~r/\?/ |> Regex.scan(fragment) |> List.flatten() |> length()
+      escaped = ~r/\\\?/ |> Regex.scan(fragment) |> List.flatten() |> length()
+
+      not_escaped - escaped - 1
+    end
+  end
+
+  @custom_predicates Application.get_env(:ex_sieve, :custom_predicates, [])
+
+  for {cp, frag} <- @custom_predicates do
+    arg_names =
+      frag
+      |> Utils.get_arity()
+      |> case do
+        arity when arity < 1 -> []
+        arity -> Enum.map(1..arity, &Macro.var(:"arg#{&1}", __MODULE__))
+      end
+
+    defmacro unquote(cp)(field, unquote_splicing(arg_names)) do
+      {:fragment, [], [unquote(frag), field, unquote_splicing(arg_names)]}
+    end
+  end
+
+  @spec custom_predicates :: keyword(String.t())
+  def custom_predicates, do: @custom_predicates
+end

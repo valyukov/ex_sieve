@@ -2,7 +2,7 @@ defmodule ExSieve.Node.ConditionTest do
   use ExUnit.Case
 
   alias ExSieve.Config
-  alias ExSieve.{Node.Condition, Comment, User}
+  alias ExSieve.{Node.Condition, Comment, Post, User}
 
   describe "ExSieve.Node.Condition.extract/4" do
     test "return Condition with without combinator" do
@@ -65,6 +65,11 @@ defmodule ExSieve.Node.ConditionTest do
 
       config = %Config{ignore_errors: false, except_predicates: [:basic, "cont_all"]}
       assert %Condition{} = Condition.extract("body_not_cont_all", ["foo", "bar"], Comment, config)
+    end
+
+    test "return Condition for custom predicate" do
+      condition = Condition.extract("metadata_has_key", ["foo"], Post, %Config{})
+      assert condition.predicate == :has_key
     end
 
     test "return {:error, :predicate_not_found}" do

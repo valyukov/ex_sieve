@@ -1,5 +1,12 @@
 use Mix.Config
 
+config :ex_sieve,
+  custom_predicates: [
+    has_key: "? \\? ?",
+    not_liked: "(? ->> 'score') :: int < 6",
+    key_is: "(? ->> ?) = ?"
+  ]
+
 config :ex_sieve, ecto_repos: [ExSieve.Repo]
 
 config :ex_sieve, ExSieve.Repo,

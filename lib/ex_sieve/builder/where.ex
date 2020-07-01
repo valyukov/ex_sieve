@@ -1,6 +1,7 @@
 defmodule ExSieve.Builder.Where do
   @moduledoc false
   import Ecto.Query
+  import ExSieve.CustomPredicate
 
   alias ExSieve.{Config, Utils}
   alias ExSieve.Node.{Attribute, Condition, Grouping}
@@ -43,7 +44,6 @@ defmodule ExSieve.Builder.Where do
                       end)
   @all_any_predicates_str Enum.map(@all_any_predicates, &Atom.to_string/1)
 
-  @predicates @basic_predicates ++ @all_any_predicates
   @predicates_str @basic_predicates_str ++ @all_any_predicates_str
 
   @spec predicates() :: [String.t()]
@@ -60,6 +60,7 @@ defmodule ExSieve.Builder.Where do
           | {:error, {:predicate_not_found, predicate :: atom()}}
           | {:error, {:invalid_type, field :: String.t()}}
           | {:error, {:invalid_value, {field :: String.t(), value :: any()}}}
+          | {:error, {:too_few_values, {key :: String.t(), arity :: non_neg_integer()}}}
 
   def build(query, %Grouping{combinator: combinator} = grouping, config) when combinator in ~w(and or)a do
     case dynamic_grouping(grouping, config) do
@@ -140,9 +141,7 @@ defmodule ExSieve.Builder.Where do
     end
   end
 
-  defp validate_dynamic(predicate, _attribute, _values) when predicate in @predicates, do: :ok
-
-  defp validate_dynamic(predicate, _attribute, _values), do: {:error, {:predicate_not_found, predicate}}
+  defp validate_dynamic(_predicate, _attribute, _values), do: :ok
 
   defp build_dynamic(:eq, %Attribute{parent: [], name: name}, [value | _]) do
     dynamic([p], field(p, ^name) == ^value)
@@ -310,6 +309,34 @@ defmodule ExSieve.Builder.Where do
 
   defp build_dynamic(:present, %Attribute{parent: parent, name: name}, _value) do
     dynamic([{^parent_name(parent), p}], not (is_nil(field(p, ^name)) or field(p, ^name) == ^""))
+  end
+
+  for {cp, frag} <- custom_predicates() do
+    arity = ExSieve.CustomPredicate.Utils.get_arity(frag)
+
+    {value_names_pinned, values_list} =
+      case arity do
+        arity when arity < 1 ->
+          {[], quote(do: _)}
+
+        arity ->
+          {
+            Enum.map(1..arity, &quote(do: ^unquote(Macro.var(:"v#{&1}", __MODULE__)))),
+            quote(do: [unquote_splicing(Enum.map(1..arity, &Macro.var(:"v#{&1}", __MODULE__))) | _])
+          }
+      end
+
+    defp build_dynamic(unquote(cp), %Attribute{parent: [], name: name}, unquote(values_list)) do
+      dynamic([p], unquote(cp)(field(p, ^name), unquote_splicing(value_names_pinned)))
+    end
+
+    defp build_dynamic(unquote(cp), %Attribute{parent: parent, name: name}, unquote(values_list)) do
+      dynamic([{^parent_name(parent), p}], unquote(cp)(field(p, ^name), unquote_splicing(value_names_pinned)))
+    end
+
+    defp build_dynamic(unquote(cp), attr, _values) do
+      {:error, {:too_few_values, {"#{Utils.rebuild_key(attr)}_#{unquote(cp)}", unquote(arity)}}}
+    end
   end
 
   defp build_dynamic(predicate, _attribute, _values), do: {:error, {:predicate_not_found, predicate}}

@@ -496,4 +496,29 @@ defmodule ExSieve.Builder.WhereTest do
       assert {:error, {:predicate_not_found, "id_lt_all"}} = ex_sieve
     end
   end
+
+  describe "custom predicates" do
+    test "return Ecto.Query for existent custom predicate" do
+      {base, ex_sieve} = ex_sieve_post_query(%{"metadata_has_key" => ["foo"]}, false)
+      query = base |> where([p], fragment("? \\? ?", p.metadata, ^"foo")) |> inspect()
+      assert query == ex_sieve
+    end
+
+    test "return Ecto.Query for existent nested custom predicate" do
+      {base, ex_sieve} = ex_sieve_post_query(%{"metadata_not_liked" => true}, true)
+      query = base |> where([posts: p], fragment("(? ->> 'score') :: int < 6", p.metadata)) |> inspect()
+      assert query == ex_sieve
+    end
+
+    test "extra values are ignored" do
+      {base, ex_sieve} = ex_sieve_post_query(%{"metadata_has_key" => ["foo", "bar"]}, false)
+      query = base |> where([p], fragment("? \\? ?", p.metadata, ^"foo")) |> inspect()
+      assert query == ex_sieve
+    end
+
+    test "return error if missing values" do
+      {_base, ex_sieve} = ex_sieve_post_query(%{"metadata_key_is" => ["foo"]}, false, false, false)
+      assert {:error, {:too_few_values, {"metadata_key_is", 2}}} = ex_sieve
+    end
+  end
 end

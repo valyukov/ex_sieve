@@ -7,6 +7,7 @@ defmodule ExSieve.Repo.Migrations.CreatePosts do
       add :body, :string
       add :published, :boolean
       add :published_at, :naive_datetime
+      add :metadata, :map
       add :user_id, references(:users)
 
       timestamps()
