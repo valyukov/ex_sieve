@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.8.1 - 14/09/2020
+ * remove dependency on `Ecto.Query.Builder.Join.join/10` (thanks to [@Eiji7](https://github.com/Eiji7))
+
 ## 0.8.0 - 01/07/2020
  * Handle nested relationships (more than one level deep)
  * Avoid inserting duplicated joins when possible
