@@ -1,6 +1,6 @@
 defmodule ExSieve.Builder.Join do
   @moduledoc false
-  alias Ecto.Query.Builder.Join
+  import Ecto.Query
   alias ExSieve.Node.{Grouping, Sort}
 
   @spec build(Ecto.Queryable.t(), Grouping.t(), list(Sort.t())) :: {:ok, Ecto.Query.t()}
@@ -69,26 +69,30 @@ defmodule ExSieve.Builder.Join do
     end
   end
 
-  defp do_apply_join({parent, relation} = pr, query) do
-    query
-    |> Macro.escape()
-    |> Join.build(:inner, join_binding(parent), expr(relation), nil, nil, join_as(pr), nil, nil, __ENV__)
-    |> elem(0)
-    |> Code.eval_quoted()
-    |> elem(0)
+  defp do_apply_join(parent_relation, query) do
+    as = join_as(parent_relation)
+    query |> Macro.escape() |> join_build(parent_relation, as) |> elem(0)
   end
 
-  defp join_binding(nil), do: [Macro.var(:query, __MODULE__)]
+  defp join_build(query, {nil, relation}, as) do
+    Code.eval_quoted(
+      quote do
+        join(unquote(query), :inner, [p], a in assoc(p, unquote(relation)), as: unquote(as))
+      end
+    )
+  end
 
-  defp join_binding(parent), do: [{String.to_atom(parent), Macro.var(:query, __MODULE__)}]
+  defp join_build(query, {string, relation}, as) do
+    parent = String.to_atom(string)
+
+    Code.eval_quoted(
+      quote do
+        join(unquote(query), :inner, [{unquote(parent), p}], a in assoc(p, unquote(relation)), as: unquote(as))
+      end
+    )
+  end
 
   defp join_as({nil, relation}), do: relation
 
   defp join_as({parent, relation}), do: :"#{parent}_#{relation}"
-
-  defp expr(relation) do
-    quote do
-      unquote(Macro.var(relation, __MODULE__)) in assoc(query, unquote(relation))
-    end
-  end
 end

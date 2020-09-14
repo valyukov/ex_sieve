@@ -25,8 +25,6 @@ end
 
 ## Ecto internals currently used
 
-- `Ecto.Query.Builder.Join.join/10` function needed beacuse dynamic joins are not available
-
 - `%Ecto.Query{from: %{source: {_, module}}}`
   Ecto.query struct internal structure, needed for extracting the main `Ecto.Schema` of the query
 
