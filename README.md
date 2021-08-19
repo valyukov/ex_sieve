@@ -12,7 +12,7 @@ Add `ex_sieve` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:ex_sieve, "~> 0.8.0"},
+    {:ex_sieve, "~> 0.8.2"},
   ]
 end
 ```

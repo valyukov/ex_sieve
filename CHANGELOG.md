@@ -1,7 +1,10 @@
 # Changelog
 
+## 0.8.2 - 19/08/2021
+ * Fix applications start, removing warnings on Elixir >= 1.11
+
 ## 0.8.1 - 14/09/2020
- * remove dependency on `Ecto.Query.Builder.Join.join/10` (thanks to [@Eiji7](https://github.com/Eiji7))
+ * Remove dependency on `Ecto.Query.Builder.Join.join/10` (thanks to [@Eiji7](https://github.com/Eiji7))
 
 ## 0.8.0 - 01/07/2020
  * Handle nested relationships (more than one level deep)
