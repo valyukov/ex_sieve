@@ -20,4 +20,9 @@ defmodule ExSieve.TestCase do
   end
 end
 
+ExUnit.start()
+
+apps = [:postgrex, :ecto, :ex_machina]
+Enum.map(apps, &Application.ensure_all_started/1)
+
 ExSieve.Repo.start_link()

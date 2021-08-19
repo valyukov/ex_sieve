@@ -24,11 +24,8 @@ defmodule ExSieve.Mixfile do
   end
 
   def application do
-    [applications: applications(Mix.env())]
+    [extra_applications: [:logger]]
   end
-
-  defp applications(:test), do: [:postgrex, :ecto, :logger, :ex_machina, :ex_unit]
-  defp applications(_), do: [:logger]
 
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
