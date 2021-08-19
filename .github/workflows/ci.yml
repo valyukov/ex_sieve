@@ -11,7 +11,7 @@ jobs:
             otp: "19.x"
           - elixir: "1.10.1"
             otp: "22.x"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     env:
       MIX_ENV: test
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -22,8 +22,8 @@ jobs:
           postgresql db: ex_sieve_test
           postgresql user: ex_sieve_user
           postgresql password: ex_sieve_password
-      - uses: actions/checkout@v1
-      - uses: actions/setup-elixir@v1
+      - uses: actions/checkout@v2
+      - uses: erlef/setup-beam@v1
         with:
           otp-version: ${{ matrix.otp }}
           elixir-version: ${{ matrix.elixir }}
